@@ -81,10 +81,11 @@ public class AppointmentService {
 
     @Transactional
     public Appointment createAppointment(@jakarta.validation.constraints.NotNull(message = "Form details are required.") @Valid AppointmentForm form) {
-        Patient patient = selectedPatient(form.getPatientId());
+        // Patients are always locked before doctors so concurrent bookings cannot deadlock.
+        Patient patient = lockPatient(form.getPatientId());
         Doctor doctor = lockDoctor(form.getDoctorId());
         requireAvailable(doctor);
-        requireFreeSlot(doctor.getId(), form, null);
+        requireFreeSlot(doctor.getId(), patient.getId(), form, null);
         Appointment appointment = new Appointment(patient, doctor, form.getAppointmentDate(),
                 form.getAppointmentTime(), form.getReason(), form.getNotes());
         appointments.saveAndFlush(appointment);
@@ -99,6 +100,7 @@ public class AppointmentService {
         requireUnbilled(id);
         appointment.requireEditable();
         Long previousDoctorId = appointment.getDoctor().getId();
+        Patient patient = lockPatient(form.getPatientId());
         // All operations moving between doctors acquire their locks in ID order.
         Doctor doctor;
         if (previousDoctorId.equals(form.getDoctorId())) {
@@ -116,8 +118,7 @@ public class AppointmentService {
                 && appointment.getAppointmentTime().equals(form.getAppointmentTime());
         // Existing bookings can still have their notes corrected if a doctor becomes unavailable.
         if (!unchangedSlot) { requireAvailable(doctor); }
-        Patient patient = selectedPatient(form.getPatientId());
-        requireFreeSlot(doctor.getId(), form, id);
+        requireFreeSlot(doctor.getId(), patient.getId(), form, id);
         appointment.updateSchedule(patient, doctor, form.getAppointmentDate(), form.getAppointmentTime(),
                 form.getReason(), form.getNotes());
         appointments.flush();
@@ -164,8 +165,8 @@ public class AppointmentService {
         return appointment;
     }
 
-    private Patient selectedPatient(Long id) {
-        return patients.findById(id).orElseThrow(
+    private Patient lockPatient(Long id) {
+        return patients.findForUpdate(id).orElseThrow(
                 () -> new AppointmentValidationException("patientId", "This patient no longer exists. Select another patient."));
     }
 
@@ -180,12 +181,20 @@ public class AppointmentService {
         }
     }
 
-    private void requireFreeSlot(Long doctorId, AppointmentForm form, Long excludedId) {
-        boolean conflict = excludedId == null
+    private void requireFreeSlot(Long doctorId, Long patientId, AppointmentForm form, Long excludedId) {
+        LocalDate date = form.getAppointmentDate();
+        LocalTime time = form.getAppointmentTime();
+        boolean doctorBusy = excludedId == null
                 ? appointments.existsByDoctorIdAndAppointmentDateAndAppointmentTimeAndStatusNot(
-                        doctorId, form.getAppointmentDate(), form.getAppointmentTime(), AppointmentStatus.CANCELLED)
+                        doctorId, date, time, AppointmentStatus.CANCELLED)
                 : appointments.existsByDoctorIdAndAppointmentDateAndAppointmentTimeAndStatusNotAndIdNot(
-                        doctorId, form.getAppointmentDate(), form.getAppointmentTime(), AppointmentStatus.CANCELLED, excludedId);
-        if (conflict) { throw new AppointmentConflictException(); }
+                        doctorId, date, time, AppointmentStatus.CANCELLED, excludedId);
+        if (doctorBusy) { throw new AppointmentConflictException(); }
+        boolean patientBusy = excludedId == null
+                ? appointments.existsByPatientIdAndAppointmentDateAndAppointmentTimeAndStatusNot(
+                        patientId, date, time, AppointmentStatus.CANCELLED)
+                : appointments.existsByPatientIdAndAppointmentDateAndAppointmentTimeAndStatusNotAndIdNot(
+                        patientId, date, time, AppointmentStatus.CANCELLED, excludedId);
+        if (patientBusy) { throw new PatientScheduleConflictException(); }
     }
 }

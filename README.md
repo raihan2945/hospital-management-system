@@ -491,6 +491,16 @@ checked under row locks, each appointment has at most one bill, and bill version
 protect repeated/concurrent payment submissions. Shared names, phones, and emails
 remain allowed; those fields are not reliable unique patient identifiers.
 
+A patient can no longer be booked twice into the same date and time, which two
+different doctors previously allowed. Booking and rescheduling lock the selected
+patient row before the doctor rows, so two concurrent requests for one patient are
+serialized in the same way as competing bookings for one doctor, and the fixed
+patient-then-doctor lock order keeps those transactions deadlock-free.
+`PatientScheduleConflictException` reports the clash on the Patient field, while a
+busy doctor still reports on Appointment time. Cancelled bookings free both slots,
+and an appointment never conflicts with itself while being edited. Two different
+patients may still see two doctors at the same time.
+
 Birth-date validation now uses `HOSPITAL_TIME_ZONE` consistently in the form's max
 date, MVC and service Bean Validation, domain updates through the patient service,
 and JPA persistence validation. This accepts a newborn born today in the hospital
@@ -512,6 +522,12 @@ error controller provide these responses:
 | 503 | Unavailable database connection/transaction |
 | 500 | Unexpected failure, with a support reference linking to the server log |
 
+Entity-level Bean Validation that fails while the transaction is being rolled back
+arrives wrapped in `TransactionSystemException`; it is unwrapped to its root cause
+so a rejected value produces 400 rather than the 500 page, while any other rollback
+cause keeps the logged 500 with its support reference.
+
+
 Error pages never render raw exception messages, SQL, rejected values, or stack
 traces from unexpected/framework failures. Deliberately written business messages
 remain visible. Servlet fallback errors use the same safe page, and Spring's error
@@ -529,16 +545,20 @@ before resubmitting because a connection failure can leave the result uncertain.
 3. Try duplicate doctor slots, a second bill for one appointment, and a repeated
    payment submission. Verify the existing record remains intact and the conflict
    is explained. Two patients may still share contact details.
-4. Open `/patients?page=-1`, `/billing?page=2147483647`, and an unknown URL. Expect
+4. Book one patient at a date and time, then try the same patient with a different
+   doctor at that time. Expect an error on the Patient field and no second booking.
+   Cancel the first booking and confirm the slot can be used again.
+5. Open `/patients?page=-1`, `/billing?page=2147483647`, and an unknown URL. Expect
    friendly 400/404 pages with working navigation. Add `?trace=true` to the unknown
    URL and verify no technical details appear.
-5. On a disposable local setup, stop PostgreSQL and open a data page. Expect a 503
+6. On a disposable local setup, stop PostgreSQL and open a data page. Expect a 503
    page; restart PostgreSQL before continuing. Check payment history before retrying
    a write interrupted by an outage.
 
 The automated suite adds error-response tests for unavailable databases, locks,
-validation exceptions, integrity conflicts, unknown routes, unsupported methods,
-and unexpected failures. It also tests preserved billing input, excessive discounts,
+validation exceptions, integrity conflicts, rollback causes, unknown routes,
+unsupported methods, and unexpected failures. Appointment tests cover the patient
+slot rule for new bookings, reschedules, self-edits, and cancelled bookings. It also tests preserved billing input, excessive discounts,
 null service forms, supported page bounds, and shared contacts. Isolated clock tests
 verify newborn registration through MVC, service/domain logic, and JPA across the
 hospital/UTC midnight boundary.

@@ -14,7 +14,8 @@ import java.util.Objects;
 @Entity
 @Table(name = "appointments", indexes = {
         @Index(name = "idx_appointment_doctor_slot", columnList = "doctor_id,appointment_date,appointment_time"),
-        @Index(name = "idx_appointment_patient", columnList = "patient_id")
+        @Index(name = "idx_appointment_patient", columnList = "patient_id"),
+        @Index(name = "idx_appointment_patient_slot", columnList = "patient_id,appointment_date,appointment_time")
 })
 public class Appointment extends BaseEntity {
     @Column(unique = true, length = 30)

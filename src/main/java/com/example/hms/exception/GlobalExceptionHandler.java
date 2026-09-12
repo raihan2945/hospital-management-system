@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.transaction.CannotCreateTransactionException;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -66,6 +67,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({OptimisticLockingFailureException.class, PessimisticLockingFailureException.class, QueryTimeoutException.class})
     public ModelAndView concurrentChange() { return ErrorPages.standard(409); }
+
+    /** Entity-level Bean Validation reaches the caller wrapped once the transaction is rolled back. */
+    @ExceptionHandler(TransactionSystemException.class)
+    public ModelAndView transactionFailure(TransactionSystemException exception) {
+        return exception.getMostSpecificCause() instanceof ConstraintViolationException
+                ? ErrorPages.standard(400)
+                : unexpected(exception);
+    }
 
     @ExceptionHandler({DataAccessResourceFailureException.class, CannotCreateTransactionException.class})
     public ModelAndView unavailable() { return ErrorPages.standard(503); }

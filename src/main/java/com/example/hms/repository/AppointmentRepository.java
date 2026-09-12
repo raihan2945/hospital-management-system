@@ -43,6 +43,12 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long>,
     boolean existsByDoctorIdAndAppointmentDateAndAppointmentTimeAndStatusNotAndIdNot(
             Long doctorId, LocalDate date, LocalTime time, AppointmentStatus excludedStatus, Long excludedId);
 
+    boolean existsByPatientIdAndAppointmentDateAndAppointmentTimeAndStatusNot(
+            Long patientId, LocalDate date, LocalTime time, AppointmentStatus excludedStatus);
+
+    boolean existsByPatientIdAndAppointmentDateAndAppointmentTimeAndStatusNotAndIdNot(
+            Long patientId, LocalDate date, LocalTime time, AppointmentStatus excludedStatus, Long excludedId);
+
     boolean existsByPatientId(Long patientId);
     boolean existsByDoctorId(Long doctorId);
 }

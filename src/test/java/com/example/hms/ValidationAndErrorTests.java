@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -58,6 +59,9 @@ class ValidationAndErrorTests {
                 case "lock" -> new CannotAcquireLockException("SECRET_LOCK_DETAILS");
                 case "validation" -> new ConstraintViolationException("SECRET_INVALID_VALUE", Set.of());
                 case "integrity" -> new DataIntegrityViolationException("SECRET_SQL_CONSTRAINT");
+                case "commit-validation" -> new TransactionSystemException("SECRET_ROLLBACK",
+                        new ConstraintViolationException("SECRET_ENTITY_VIOLATION", Set.of()));
+                case "commit-failure" -> new TransactionSystemException("SECRET_ROLLBACK", new IllegalStateException("SECRET_COMMIT_FAILURE"));
                 case "status" -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SECRET_INTERNAL_REASON");
                 default -> new IllegalStateException("SECRET_INTERNAL_FAILURE");
             };
@@ -65,7 +69,8 @@ class ValidationAndErrorTests {
     }
 
     @ParameterizedTest
-    @CsvSource({"database,503", "lock,409", "validation,400", "integrity,409", "status,404", "unexpected,500"})
+    @CsvSource({"database,503", "lock,409", "validation,400", "integrity,409", "status,404", "unexpected,500",
+            "commit-validation,400", "commit-failure,500"})
     void exceptionsReturnSafePagesAndCorrectStatus(String kind, int code) throws Exception {
         mvc.perform(get("/__test/errors/" + kind).param("trace", "true"))
                 .andExpect(status().is(code)).andExpect(view().name("error/message"))

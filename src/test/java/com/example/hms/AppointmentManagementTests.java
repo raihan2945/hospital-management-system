@@ -105,11 +105,60 @@ class AppointmentManagementTests {
         Doctor other = doctors.saveAndFlush(new Doctor("Other", "Doctor", "01900123456", null, "ENT", BigDecimal.ZERO));
         AppointmentForm differentDoctor = form("10:00");
         differentDoctor.setDoctorId(other.getId());
+        differentDoctor.setPatientId(secondPatient().getId());
         service.createAppointment(differentDoctor);
         AppointmentForm differentDate = form("10:00");
         differentDate.setAppointmentDate(DATE.plusDays(1));
         service.createAppointment(differentDate);
         assertThat(appointments.count()).isEqualTo(count + 2);
+    }
+
+    @Test
+    void patientCannotHoldTwoAppointmentsInTheSameSlot() throws Exception {
+        service.createAppointment(form("10:00"));
+        long count = appointments.count();
+        Doctor other = doctors.saveAndFlush(new Doctor("Second", "Doctor", "01900123456", null, "ENT", BigDecimal.ZERO));
+        AppointmentForm sameSlot = form("10:00");
+        sameSlot.setDoctorId(other.getId());
+        mvc.perform(bookingPost("/appointments", sameSlot))
+                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form", "patientId"))
+                .andExpect(content().string(containsString("This patient already has an appointment")));
+        assertThatThrownBy(() -> service.createAppointment(sameSlot)).isInstanceOf(PatientScheduleConflictException.class);
+        assertThat(appointments.count()).isEqualTo(count);
+        // Another patient may still see the second doctor at that time.
+        sameSlot.setPatientId(secondPatient().getId());
+        service.createAppointment(sameSlot);
+        assertThat(appointments.count()).isEqualTo(count + 1);
+    }
+
+    @Test
+    void movingAnAppointmentOntoTheSamePatientsOtherBookingIsRejected() throws Exception {
+        Doctor other = doctors.saveAndFlush(new Doctor("Second", "Doctor", "01900123456", null, "ENT", BigDecimal.ZERO));
+        service.createAppointment(form("10:00"));
+        AppointmentForm second = form("11:00");
+        second.setDoctorId(other.getId());
+        Appointment moved = service.createAppointment(second);
+        AppointmentForm edit = AppointmentForm.from(moved);
+        edit.setAppointmentTime(LocalTime.of(10, 0));
+        edit.setNotes("Should not be saved");
+        mvc.perform(bookingPost("/appointments/" + moved.getId() + "/edit", edit))
+                .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form", "patientId"));
+        assertThat(moved.getAppointmentTime()).isEqualTo(LocalTime.of(11, 0));
+        assertThat(moved.getNotes()).isNull();
+        // Its own booking never counts against it.
+        edit.setAppointmentTime(LocalTime.of(11, 0));
+        service.updateAppointment(moved.getId(), edit);
+        assertThat(moved.getNotes()).isEqualTo("Should not be saved");
+    }
+
+    @Test
+    void cancelledBookingsFreeThePatientSlotToo() {
+        Appointment appointment = service.createAppointment(form("10:00"));
+        service.cancelAppointment(appointment.getId(), appointment.getVersion());
+        Doctor other = doctors.saveAndFlush(new Doctor("Second", "Doctor", "01900123456", null, "ENT", BigDecimal.ZERO));
+        AppointmentForm rebooked = form("10:00");
+        rebooked.setDoctorId(other.getId());
+        assertThat(service.createAppointment(rebooked).getId()).isNotNull();
     }
 
     @Test
@@ -274,6 +323,13 @@ class AppointmentManagementTests {
     @ValueSource(strings = {"/appointments?date=bad", "/appointments?status=bad", "/appointments?doctorId=bad", "/appointments?page=bad"})
     void malformedFiltersReturn400(String path) throws Exception {
         mvc.perform(get(path)).andExpect(status().isBadRequest());
+    }
+
+    private Patient secondPatient() {
+        Patient other = patients.saveAndFlush(new Patient("Nusrat", "Jahan", "01711223344", null, Gender.FEMALE, null));
+        other.assignPatientCode();
+        patients.flush();
+        return other;
     }
 
     private AppointmentForm form(String time) {
