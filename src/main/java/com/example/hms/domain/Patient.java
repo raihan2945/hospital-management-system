@@ -48,15 +48,25 @@ public class Patient extends Person {
 
     public Patient(String firstName, String lastName, String phone, String email,
                    Gender gender, LocalDate dateOfBirth) {
+        this(firstName, lastName, phone, email, gender, dateOfBirth, LocalDate.now());
+    }
+
+    public Patient(String firstName, String lastName, String phone, String email,
+                   Gender gender, LocalDate dateOfBirth, LocalDate today) {
         super(firstName, lastName, phone, email);
-        updatePersonalDetails(gender, dateOfBirth);
+        updatePersonalDetails(gender, dateOfBirth, today);
     }
 
     public void updatePersonalDetails(Gender gender, LocalDate dateOfBirth) {
+        updatePersonalDetails(gender, dateOfBirth, LocalDate.now());
+    }
+
+    public void updatePersonalDetails(Gender gender, LocalDate dateOfBirth, LocalDate today) {
         if (gender == null) {
             throw new IllegalArgumentException("Gender is required; use NOT_SPECIFIED if unknown");
         }
-        if (dateOfBirth != null && dateOfBirth.isAfter(LocalDate.now())) {
+        java.util.Objects.requireNonNull(today, "Today's date is required");
+        if (dateOfBirth != null && dateOfBirth.isAfter(today)) {
             throw new IllegalArgumentException("Date of birth cannot be in the future");
         }
         this.gender = gender;

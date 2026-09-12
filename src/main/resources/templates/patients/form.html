@@ -28,7 +28,7 @@
         </div>
         <div class="col-md-6">
             <label class="form-label" for="dateOfBirth">Date of birth</label>
-            <input class="form-control" th:errorclass="is-invalid" type="date" id="dateOfBirth" th:field="*{dateOfBirth}" th:max="${T(java.time.LocalDate).now()}"
+            <input class="form-control" th:errorclass="is-invalid" type="date" id="dateOfBirth" th:field="*{dateOfBirth}" th:max="${hospitalToday}"
                    th:attr="aria-invalid=${#fields.hasErrors('dateOfBirth')}" aria-describedby="dateOfBirth-error">
             <div class="invalid-feedback" id="dateOfBirth-error" th:errors="*{dateOfBirth}"></div>
         </div>
@@ -64,4 +64,3 @@
 <footer th:replace="~{layout/fragments :: footer}"></footer>
 </body>
 </html>
-

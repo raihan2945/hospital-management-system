@@ -17,10 +17,15 @@ import java.util.List;
 @RequestMapping("/patients")
 public class PatientController {
     private final PatientService service;
+    private final java.time.Clock clock;
 
-    public PatientController(PatientService service) {
+    public PatientController(PatientService service, java.time.Clock clock) {
         this.service = service;
+        this.clock = clock;
     }
+
+    @ModelAttribute("hospitalToday")
+    public java.time.LocalDate hospitalToday() { return java.time.LocalDate.now(clock); }
 
     @ModelAttribute("activeSection")
     public String activeSection() { return "patients"; }
@@ -113,4 +118,3 @@ public class PatientController {
         return "patients/form";
     }
 }
-

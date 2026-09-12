@@ -28,7 +28,7 @@ public class Payment extends BaseEntity {
     public Payment(Bill bill, BigDecimal amount, PaymentMethod method, String reference) {
         this.bill = Objects.requireNonNull(bill);
         this.amount = Money.nonNegative(amount, "amount");
-        if (this.amount.signum() == 0) { throw new BillingValidationException("amount", "Payment must be greater than zero."); }
+        if (this.amount.signum() == 0) { throw new com.example.hms.exception.InvalidPaymentException("Payment must be greater than zero."); }
         paymentMethod = Objects.requireNonNull(method);
         transactionReference = Person.optionalText(reference, "Transaction reference", 100);
         paymentDate = Instant.now();

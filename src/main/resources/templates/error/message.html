@@ -5,8 +5,10 @@
 <header th:replace="~{layout/fragments :: header}"></header>
 <main id="main-content" class="container py-5">
     <section class="form-page mx-auto card border-0 shadow-sm p-5">
+        <p th:if="${statusCode != null}" class="small fw-semibold text-secondary" th:text="|Error ${statusCode}|"></p>
         <h1 class="h3" th:text="${title}"></h1>
         <p class="text-secondary my-3" th:text="${message}"></p>
+        <p th:if="${reference != null}" class="small text-secondary">If this continues, give support this reference: <span th:text="${reference}"></span>.</p>
         <div class="d-flex flex-wrap gap-2">
             <a class="btn btn-outline-primary" th:href="@{/dashboard}">Dashboard</a>
             <a class="btn btn-outline-primary" th:href="@{/billing}">Billing</a>

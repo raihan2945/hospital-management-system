@@ -24,11 +24,13 @@ public class PatientService {
     private final PatientRepository patients;
     private final AppointmentRepository appointments;
     private final com.example.hms.repository.BillRepository bills;
+    private final java.time.Clock clock;
 
-    public PatientService(PatientRepository patients, AppointmentRepository appointments, com.example.hms.repository.BillRepository bills) {
+    public PatientService(PatientRepository patients, AppointmentRepository appointments, com.example.hms.repository.BillRepository bills, java.time.Clock clock) {
         this.patients = patients;
         this.appointments = appointments;
         this.bills = bills;
+        this.clock = clock;
     }
 
     public Page<Patient> search(String keyword, Gender gender, String bloodGroup, int page) {
@@ -39,7 +41,7 @@ public class PatientService {
         if (bloodGroup != null && !bloodGroup.isBlank()) {
             criteria = criteria.and((root, query, cb) -> cb.equal(root.get("bloodGroup"), bloodGroup));
         }
-        return patients.findAll(criteria, PageRequest.of(Math.max(0, page), 10, Sort.by("id").descending()));
+        return patients.findAll(criteria, PageRequest.of(com.example.hms.util.PageNumbers.validate(page, 10), 10, Sort.by("id").descending()));
     }
 
     public Patient getPatient(Long id) {
@@ -47,9 +49,9 @@ public class PatientService {
     }
 
     @Transactional
-    public Patient createPatient(@Valid PatientForm form) {
+    public Patient createPatient(@jakarta.validation.constraints.NotNull(message = "Form details are required.") @Valid PatientForm form) {
         Patient patient = new Patient(form.getFirstName(), form.getLastName(), form.getPhone(),
-                form.getEmail(), form.getGender(), form.getDateOfBirth());
+                form.getEmail(), form.getGender(), form.getDateOfBirth(), java.time.LocalDate.now(clock));
         patient.updateRegistrationDetails(form.getAddress(), form.getBloodGroup(), form.getEmergencyContact());
         patients.saveAndFlush(patient);
         patient.assignPatientCode();
@@ -57,11 +59,11 @@ public class PatientService {
     }
 
     @Transactional
-    public Patient updatePatient(Long id, @Valid PatientForm form) {
+    public Patient updatePatient(Long id, @jakarta.validation.constraints.NotNull(message = "Form details are required.") @Valid PatientForm form) {
         Patient patient = getPatient(id);
         patient.rename(form.getFirstName(), form.getLastName());
         patient.updateContact(form.getPhone(), form.getEmail());
-        patient.updatePersonalDetails(form.getGender(), form.getDateOfBirth());
+        patient.updatePersonalDetails(form.getGender(), form.getDateOfBirth(), java.time.LocalDate.now(clock));
         patient.updateRegistrationDetails(form.getAddress(), form.getBloodGroup(), form.getEmergencyContact());
         return patient;
     }

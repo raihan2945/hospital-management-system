@@ -53,7 +53,7 @@ public class BillingService {
         if (status != null) {
             criteria = criteria.and((root, query, cb) -> cb.equal(root.get("paymentStatus"), status));
         }
-        return bills.findAll(criteria, PageRequest.of(Math.max(0, page), 10, Sort.by("id").descending()));
+        return bills.findAll(criteria, PageRequest.of(com.example.hms.util.PageNumbers.validate(page, 10), 10, Sort.by("id").descending()));
     }
 
     public Bill getBill(Long id) {
@@ -83,7 +83,7 @@ public class BillingService {
     }
 
     @Transactional
-    public Bill createBill(@Valid CreateBillForm form) {
+    public Bill createBill(@jakarta.validation.constraints.NotNull(message = "Form details are required.") @Valid CreateBillForm form) {
         Appointment appointment = null;
         // Serialize against other bills and appointment edits before checking ownership.
         if (form.getAppointmentId() != null) {
@@ -102,7 +102,7 @@ public class BillingService {
     }
 
     @Transactional
-    public Payment recordPayment(Long billId, @Valid PaymentForm form) {
+    public Payment recordPayment(Long billId, @jakarta.validation.constraints.NotNull(message = "Form details are required.") @Valid PaymentForm form) {
         Bill bill = bills.findForUpdate(billId).orElseThrow(() -> new ResourceNotFoundException("Invoice not found."));
         if (!Objects.equals(form.getVersion(), bill.getVersion())) {
             throw new BillingStateException("This invoice has changed or this payment was already submitted. Reload the invoice and check payment history before trying again.");
@@ -122,7 +122,7 @@ public class BillingService {
             throw new BillingValidationException("appointmentId", "Cancelled appointments cannot be billed.");
         }
         if (bills.existsByAppointmentId(appointment.getId())) {
-            throw new BillingValidationException("appointmentId", "This appointment already has an invoice. Open its existing invoice from the billing list.");
+            throw new DuplicateBillException();
         }
     }
 }

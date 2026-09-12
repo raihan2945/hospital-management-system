@@ -54,7 +54,7 @@ public class AppointmentService {
         if (status != null) {
             criteria = criteria.and((root, query, cb) -> cb.equal(root.get("status"), status));
         }
-        return appointments.findAll(criteria, PageRequest.of(Math.max(0, page), 10,
+        return appointments.findAll(criteria, PageRequest.of(com.example.hms.util.PageNumbers.validate(page, 10), 10,
                 Sort.by("appointmentDate", "appointmentTime", "id").descending()));
     }
 
@@ -80,7 +80,7 @@ public class AppointmentService {
     }
 
     @Transactional
-    public Appointment createAppointment(@Valid AppointmentForm form) {
+    public Appointment createAppointment(@jakarta.validation.constraints.NotNull(message = "Form details are required.") @Valid AppointmentForm form) {
         Patient patient = selectedPatient(form.getPatientId());
         Doctor doctor = lockDoctor(form.getDoctorId());
         requireAvailable(doctor);
@@ -94,7 +94,7 @@ public class AppointmentService {
     }
 
     @Transactional
-    public Appointment updateAppointment(Long id, @Valid AppointmentForm form) {
+    public Appointment updateAppointment(Long id, @jakarta.validation.constraints.NotNull(message = "Form details are required.") @Valid AppointmentForm form) {
         Appointment appointment = lockedAppointment(id, form.getVersion());
         requireUnbilled(id);
         appointment.requireEditable();

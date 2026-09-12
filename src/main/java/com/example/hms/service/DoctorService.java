@@ -37,7 +37,7 @@ public class DoctorService {
         if (available != null) {
             criteria = criteria.and((root, query, cb) -> cb.equal(root.get("available"), available));
         }
-        return doctors.findAll(criteria, PageRequest.of(Math.max(0, page), 10, Sort.by("id").descending()));
+        return doctors.findAll(criteria, PageRequest.of(com.example.hms.util.PageNumbers.validate(page, 10), 10, Sort.by("id").descending()));
     }
 
     public List<String> specializations() {
@@ -49,7 +49,7 @@ public class DoctorService {
     }
 
     @Transactional
-    public Doctor createDoctor(@Valid DoctorForm form) {
+    public Doctor createDoctor(@jakarta.validation.constraints.NotNull(message = "Form details are required.") @Valid DoctorForm form) {
         Doctor doctor = new Doctor(form.getFirstName(), form.getLastName(), form.getPhone(),
                 form.getEmail(), form.getSpecialization(), form.getConsultationFee());
         applyPractice(doctor, form);
@@ -59,7 +59,7 @@ public class DoctorService {
     }
 
     @Transactional
-    public Doctor updateDoctor(Long id, @Valid DoctorForm form) {
+    public Doctor updateDoctor(Long id, @jakarta.validation.constraints.NotNull(message = "Form details are required.") @Valid DoctorForm form) {
         Doctor doctor = doctors.findForUpdate(id).orElseThrow(() -> new ResourceNotFoundException("Doctor not found."));
         doctor.rename(form.getFirstName(), form.getLastName());
         doctor.updateContact(form.getPhone(), form.getEmail());

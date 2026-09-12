@@ -79,7 +79,7 @@ public class Bill extends BaseEntity {
     public void applyPayment(BigDecimal amount) {
         BigDecimal valid = Money.nonNegative(amount, "amount");
         if (valid.signum() == 0 || valid.compareTo(getDueAmount()) > 0) {
-            throw new BillingValidationException("amount", "Payment must be greater than zero and cannot exceed the remaining balance.");
+            throw new com.example.hms.exception.InvalidPaymentException("Payment must be greater than zero and cannot exceed the remaining balance.");
         }
         paidAmount = paidAmount.add(valid);
         updatePaymentStatus();

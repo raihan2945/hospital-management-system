@@ -2,12 +2,13 @@
 
 A Java 21 varsity assignment project following the [project blueprint](docs/hospital-management-system--blueprint.md).
 
-Phases 1 through 9 provide a running Spring Boot application, persistent
+Phases 1 through 10 provide a running Spring Boot application, persistent
 PostgreSQL storage, the common OOP foundation, and complete patient and doctor
 directories, appointment management, billing, invoices, payment history, and a
 dashboard with current totals and recent activity. Phase 9 adds shared desktop/mobile
-navigation, accessible UI improvements, and confirmation dialogs. Phase 10 covers
-validation and exception-handling improvements.
+navigation, accessible UI improvements, and confirmation dialogs. Phase 10 adds
+consistent validation, hospital-date checks, and safe error handling. Phase 11
+will add optional demo data.
 
 ## Stack and structure
 
@@ -29,6 +30,7 @@ src/main/java/com/example/hms/
   service/                Directory, appointment, billing, and dashboard services
   service/payment/        PaymentProcessor and four payment recording implementations
   exception/              Application errors and handling
+  validation/             Cross-field bill discount validation
   util/                   Shared helpers
 src/main/resources/
   application.yml
@@ -468,6 +470,79 @@ These JavaScript tests run separately from Maven. The Java suite also verifies
 shared navigation, local asset references, form feedback, confirmation-page
 fallbacks, and visibility of actions on billed appointments.
 
+## Phase 10: validation and exception handling
+
+All create/update service forms now require a non-null DTO and run Bean Validation
+at the service boundary as well as in MVC. Billing and payment fields have explicit
+messages for missing, negative, oversized, or overly precise values. Malformed
+amounts, payment methods, appointment selections, and versions have field-specific
+binding messages. Invalid forms preserve the other entered values and show the
+existing field errors and focused summary.
+
+`@ValidBillDiscount` validates the combined charges before entering billing logic
+and attaches an excessive-discount error to the Discount field. The domain still
+checks that rule independently. Payment references are trimmed consistently with
+other optional text. `InvalidPaymentException` identifies invalid settlement
+amounts; `DuplicateBillException` identifies an already-billed appointment.
+
+Duplicate protection remains based on record identity and business relationships:
+registration/invoice codes have database unique constraints, doctor slots are
+checked under row locks, each appointment has at most one bill, and bill versions
+protect repeated/concurrent payment submissions. Shared names, phones, and emails
+remain allowed; those fields are not reliable unique patient identifiers.
+
+Birth-date validation now uses `HOSPITAL_TIME_ZONE` consistently in the form's max
+date, MVC and service Bean Validation, domain updates through the patient service,
+and JPA persistence validation. This accepts a newborn born today in the hospital
+timezone even when the container's UTC calendar still shows yesterday. Direct
+domain callers can supply their current date explicitly; existing overloads use
+the JVM's local date. Tomorrow is still rejected.
+
+Negative page numbers and offsets beyond JPA's supported integer range produce
+HTTP 400 rather than a database error. The shared exception handler and servlet
+error controller provide these responses:
+
+| Status | Behavior |
+| --- | --- |
+| 400 | Malformed parameters, invalid page numbers, binding/service validation, or uncaught business validation |
+| 404 | Missing records, unknown pages, missing static resources, or a direct `/error` visit |
+| 405 | Unsupported HTTP method, retaining the `Allow` response header |
+| 406 / 415 | Unsupported response/request formats |
+| 409 | Duplicate database records, referenced records, stale versions, lock conflicts, or query timeouts |
+| 503 | Unavailable database connection/transaction |
+| 500 | Unexpected failure, with a support reference linking to the server log |
+
+Error pages never render raw exception messages, SQL, rejected values, or stack
+traces from unexpected/framework failures. Deliberately written business messages
+remain visible. Servlet fallback errors use the same safe page, and Spring's error
+detail settings prevent query parameters such as `trace=true` from exposing a
+stack trace. Payment-related recovery text asks staff to inspect payment history
+before resubmitting because a connection failure can leave the result uncertain.
+
+### Manual validation verification
+
+1. Submit a patient/doctor form with required fields missing, a malformed email, or
+   a future birth date. Expect field errors, retained input, and no saved record.
+2. Enter malformed/negative billing charges or a discount above the subtotal.
+   Expect a message identifying the field. Try an invalid payment method, amount,
+   or missing version and check that the payment history does not change.
+3. Try duplicate doctor slots, a second bill for one appointment, and a repeated
+   payment submission. Verify the existing record remains intact and the conflict
+   is explained. Two patients may still share contact details.
+4. Open `/patients?page=-1`, `/billing?page=2147483647`, and an unknown URL. Expect
+   friendly 400/404 pages with working navigation. Add `?trace=true` to the unknown
+   URL and verify no technical details appear.
+5. On a disposable local setup, stop PostgreSQL and open a data page. Expect a 503
+   page; restart PostgreSQL before continuing. Check payment history before retrying
+   a write interrupted by an outage.
+
+The automated suite adds error-response tests for unavailable databases, locks,
+validation exceptions, integrity conflicts, unknown routes, unsupported methods,
+and unexpected failures. It also tests preserved billing input, excessive discounts,
+null service forms, supported page bounds, and shared contacts. Isolated clock tests
+verify newborn registration through MVC, service/domain logic, and JPA across the
+hospital/UTC midnight boundary.
+
 ## Run with Docker (recommended)
 
 Install Docker with Compose v2. On Windows, start Docker Desktop with Linux
@@ -520,7 +595,7 @@ still listens on port 8080 inside its container.
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `SERVER_PORT` | `8080` | Host HTTP port in Compose; listening port for local Java |
-| `HOSPITAL_TIME_ZONE` | `Asia/Dhaka` | IANA timezone for dashboard dates and today's appointments |
+| `HOSPITAL_TIME_ZONE` | `Asia/Dhaka` | IANA timezone for dashboard dates, today's appointments, and birth-date validation |
 | `POSTGRES_PORT` | `5432` | Host PostgreSQL port in Compose |
 | `POSTGRES_DB` | `hospital_db` | Database initialized by Compose |
 | `POSTGRES_USER` | `hospital` | Database user initialized by Compose |
