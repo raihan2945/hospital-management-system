@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<span th:fragment="status(status)" class="badge" th:classappend="|status-${#strings.toLowerCase(status.name())}|"
+      th:text="${#strings.capitalize(#strings.toLowerCase(status.name()))}"></span>
+</body>
+</html>
+

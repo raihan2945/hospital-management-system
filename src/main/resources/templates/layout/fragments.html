@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | Hospital Management System'">Hospital Management System</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header th:fragment="header" class="border-bottom bg-white">
+    <a class="visually-hidden-focusable" href="#main-content">Skip to content</a>
+    <nav class="navbar navbar-expand-sm container py-3" aria-label="Main navigation">
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" th:href="@{/}">
+            <span class="brand-mark" aria-hidden="true">+</span> HMS
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navigation" aria-controls="navigation"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navigation">
+            <ul class="navbar-nav ms-auto gap-sm-3">
+                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'home'} ? 'active'" th:attr="aria-current=${activeSection == 'home' ? 'page' : null}" th:href="@{/}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'patients'} ? 'active'" th:attr="aria-current=${activeSection == 'patients' ? 'page' : null}" th:href="@{/patients}">Patients</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'doctors'} ? 'active'" th:attr="aria-current=${activeSection == 'doctors' ? 'page' : null}" th:href="@{/doctors}">Doctors</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'appointments'} ? 'active'" th:attr="aria-current=${activeSection == 'appointments' ? 'page' : null}" th:href="@{/appointments}">Appointments</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/actuator/health}">System health</a></li>
+            </ul>
+        </div>
+    </nav>
+</header>
+<div th:fragment="alerts" th:if="${success}" class="alert alert-success" role="status" th:text="${success}"></div>
+<footer th:fragment="footer" class="container border-top py-4 text-secondary small">
+    Hospital Management System &middot; Java OOP assignment
+    <script th:src="@{/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js}"></script>
+</footer>
+</body>
+</html>

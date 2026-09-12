@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head(${title})}"></head>
+<body>
+<header th:replace="~{layout/fragments :: header}"></header>
+<main id="main-content" class="container py-5">
+    <div class="form-page mx-auto">
+        <a class="back-link" th:href="@{/appointments}">&larr; Appointments</a>
+        <h1 class="h2 mt-3" th:text="${title}"></h1>
+        <p class="text-secondary">Fields marked * are required. Times use the hospital's local time.</p>
+        <div th:if="${patients.empty or doctors.empty}" class="alert alert-info">
+            Register a patient and an available doctor before scheduling.
+            <a th:href="@{/patients/new}">Register patient</a> &middot;
+            <a th:href="@{/doctors/new}">Register doctor</a>
+        </div>
+        <form method="post" th:action="${id == null} ? @{/appointments} : @{/appointments/{id}/edit(id=${id})}"
+              th:object="${form}" class="card border-0 shadow-sm p-4">
+            <input th:if="${id != null}" type="hidden" th:field="*{version}">
+            <div th:replace="~{layout/forms :: errors}"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="patientId">Patient *</label>
+                    <select class="form-select" th:errorclass="is-invalid" id="patientId" th:field="*{patientId}" required aria-describedby="patient-error">
+                        <option value="">Select patient</option>
+                        <option th:each="patient : ${patients}" th:value="${patient.id}" th:text="|${patient.fullName} (${patient.patientCode})|"></option>
+                    </select>
+                    <div id="patient-error" class="invalid-feedback" th:errors="*{patientId}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="doctorId">Doctor *</label>
+                    <select class="form-select" th:errorclass="is-invalid" id="doctorId" th:field="*{doctorId}" required aria-describedby="doctor-help doctor-error">
+                        <option value="">Select doctor</option>
+                        <option th:each="doctor : ${doctors}" th:value="${doctor.id}" th:text="|${doctor.fullName} (${doctor.doctorCode}) · ${doctor.specialization}${doctor.available ? '' : ' — Unavailable'}|"></option>
+                    </select>
+                    <div id="doctor-help" class="form-text">Unavailable doctors cannot receive new or moved bookings.</div>
+                    <div id="doctor-error" class="invalid-feedback" th:errors="*{doctorId}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="appointmentDate">Appointment date *</label>
+                    <input class="form-control" th:errorclass="is-invalid" id="appointmentDate" type="date" th:field="*{appointmentDate}" required aria-describedby="date-error">
+                    <div id="date-error" class="invalid-feedback" th:errors="*{appointmentDate}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="appointmentTime">Appointment time *</label>
+                    <input class="form-control" th:errorclass="is-invalid" id="appointmentTime" type="time" th:field="*{appointmentTime}" step="60" required aria-describedby="time-error">
+                    <div id="time-error" class="invalid-feedback" th:errors="*{appointmentTime}"></div>
+                    <div class="text-danger small" th:errors="*{minutePrecision}"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="reason">Symptoms / reason for visit</label>
+                    <textarea class="form-control" th:errorclass="is-invalid" id="reason" th:field="*{reason}" rows="3" maxlength="1000" aria-describedby="reason-error"></textarea>
+                    <div id="reason-error" class="invalid-feedback" th:errors="*{reason}"></div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="notes">Notes</label>
+                    <textarea class="form-control" th:errorclass="is-invalid" id="notes" th:field="*{notes}" rows="3" maxlength="2000" aria-describedby="notes-error"></textarea>
+                    <div id="notes-error" class="invalid-feedback" th:errors="*{notes}"></div>
+                </div>
+            </div>
+            <p th:if="${id != null}" class="text-secondary small mt-3">Changing the patient, doctor, date, or time returns a confirmed appointment to Scheduled.</p>
+            <div class="d-flex gap-2 mt-4 pt-4 border-top">
+                <button type="submit" class="btn btn-primary" th:text="${id == null ? 'Schedule appointment' : 'Save changes'}"></button>
+                <a class="btn btn-outline-secondary" th:href="${id == null} ? @{/appointments} : @{/appointments/{id}(id=${id})}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+</body>
+</html>
+

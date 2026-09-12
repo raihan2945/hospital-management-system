@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head(${title})}"></head>
+<body>
+<header th:replace="~{layout/fragments :: header}"></header>
+<main id="main-content" class="container py-5">
+    <div class="form-page mx-auto">
+        <a class="back-link" th:href="@{/patients}">&larr; Patient directory</a>
+        <h1 class="h2 mt-3" th:text="${title}">Register patient</h1>
+        <p class="text-secondary">Fields marked * are required.</p>
+        <form method="post" th:action="${id == null} ? @{/patients} : @{/patients/{id}/edit(id=${id})}" th:object="${form}" class="card border-0 shadow-sm p-4">
+            <div th:replace="~{layout/forms :: errors}"></div>
+            <fieldset>
+                <legend class="h5 mb-3">Contact details</legend>
+                <div th:replace="~{layout/forms :: contactFields}"></div>
+            </fieldset>
+            <fieldset class="mt-4">
+                <legend class="h5 mb-3">Patient information</legend>
+                <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label" for="gender">Gender *</label>
+            <select class="form-select" th:errorclass="is-invalid" id="gender" th:field="*{gender}" required
+                    th:attr="aria-invalid=${#fields.hasErrors('gender')}" aria-describedby="gender-error">
+                <option value="">Select a gender</option>
+                <option th:each="option : ${genders}" th:value="${option}" th:text="${#strings.capitalize(#strings.toLowerCase(#strings.replace(option.name(), '_', ' ')))}"></option>
+            </select>
+            <div class="invalid-feedback" id="gender-error" th:errors="*{gender}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="dateOfBirth">Date of birth</label>
+            <input class="form-control" th:errorclass="is-invalid" type="date" id="dateOfBirth" th:field="*{dateOfBirth}" th:max="${T(java.time.LocalDate).now()}"
+                   th:attr="aria-invalid=${#fields.hasErrors('dateOfBirth')}" aria-describedby="dateOfBirth-error">
+            <div class="invalid-feedback" id="dateOfBirth-error" th:errors="*{dateOfBirth}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="bloodGroup">Blood group</label>
+            <select class="form-select" th:errorclass="is-invalid" id="bloodGroup" th:field="*{bloodGroup}" 
+                    th:attr="aria-invalid=${#fields.hasErrors('bloodGroup')}" aria-describedby="bloodGroup-error">
+                <option value="">Not known</option>
+                <option th:each="option : ${bloodGroups}" th:value="${option}" th:text="${option}"></option>
+            </select>
+            <div class="invalid-feedback" id="bloodGroup-error" th:errors="*{bloodGroup}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="emergencyContact">Emergency contact</label>
+            <input class="form-control" th:errorclass="is-invalid" type="text" id="emergencyContact" th:field="*{emergencyContact}" maxlength="100" placeholder="Name and phone number"
+                   th:attr="aria-invalid=${#fields.hasErrors('emergencyContact')}" aria-describedby="emergencyContact-error">
+            <div class="invalid-feedback" id="emergencyContact-error" th:errors="*{emergencyContact}"></div>
+        </div>
+        <div class="col-12">
+            <label class="form-label" for="address">Address</label>
+            <textarea class="form-control" th:errorclass="is-invalid" id="address" th:field="*{address}" rows="3" maxlength="500" aria-describedby="address-error"></textarea>
+            <div class="invalid-feedback" id="address-error" th:errors="*{address}"></div>
+        </div>
+                </div>
+            </fieldset>
+            <div class="d-flex flex-wrap gap-2 mt-4 pt-4 border-top">
+                <button class="btn btn-primary" type="submit" th:text="${id == null ? 'Register patient' : 'Save changes'}">Save</button>
+                <a class="btn btn-outline-secondary" th:href="${id == null} ? @{/patients} : @{/patients/{id}(id=${id})}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+</body>
+</html>
+

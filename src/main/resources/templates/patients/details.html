@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Patient details')}"></head>
+<body>
+<header th:replace="~{layout/fragments :: header}"></header>
+<main id="main-content" class="container py-5">
+    <div th:replace="~{layout/fragments :: alerts}"></div>
+    <a class="back-link" th:href="@{/patients}">&larr; Patient directory</a>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 my-4">
+        <div><p class="text-secondary mb-1" th:text="${record.patientCode}"></p><h1 class="h2 mb-0" th:text="${record.fullName}"></h1></div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary" th:href="@{/patients/{id}/edit(id=${record.id})}">Edit patient</a>
+            <a class="btn btn-outline-danger" th:href="@{/patients/{id}/delete(id=${record.id})}">Delete</a>
+        </div>
+    </div>
+    <div class="row g-4">
+        <section class="col-lg-6" aria-labelledby="contact-heading">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <h2 id="contact-heading" class="h5 mb-4">Contact details</h2>
+                <dl class="row mb-0">
+                <dt class="col-sm-4">Phone</dt><dd class="col-sm-8 text-break" th:text="${record.phone}"></dd>
+                <dt class="col-sm-4">Email</dt><dd class="col-sm-8 text-break" th:text="${record.email ?: 'Not provided'}"></dd>
+                <dt class="col-sm-4">Address</dt><dd class="col-sm-8 text-break" th:text="${record.address ?: 'Not provided'}"></dd>
+                <dt class="col-sm-4">Emergency contact</dt><dd class="col-sm-8 text-break" th:text="${record.emergencyContact ?: 'Not provided'}"></dd>
+                </dl>
+            </div>
+        </section>
+        <section class="col-lg-6" aria-labelledby="details-heading">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <h2 id="details-heading" class="h5 mb-4">Patient information</h2>
+                <dl class="row mb-0">
+                <dt class="col-sm-4">Gender</dt><dd class="col-sm-8 text-break" th:text="${#strings.capitalize(#strings.toLowerCase(#strings.replace(record.gender.name(), '_', ' ')))}"></dd>
+                <dt class="col-sm-4">Date of birth</dt><dd class="col-sm-8 text-break" th:text="${record.dateOfBirth ?: 'Not provided'}"></dd>
+                <dt class="col-sm-4">Blood group</dt><dd class="col-sm-8 text-break" th:text="${record.bloodGroup ?: 'Not known'}"></dd>
+                </dl>
+            </div>
+        </section>
+    </div>
+    <section class="card border-0 shadow-sm p-4 mt-4" aria-labelledby="appointments-heading">
+        <h2 id="appointments-heading" class="h5">Appointment history</h2>
+        <p class="text-secondary">View scheduled, completed, and cancelled appointments for this patient.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary" th:href="@{/appointments(patientId=${record.id})}">View appointment history</a>
+            <a class="btn btn-primary" th:href="@{/appointments/new(patientId=${record.id})}">Schedule appointment</a>
+        </div>
+    </section>
+    <div class="mt-4 text-secondary small text-break">
+        <p class="mb-1">Registered (UTC): <span th:text="${record.createdAt}"></span></p>
+        <p>Last updated (UTC): <span th:text="${record.updatedAt}"></span></p>
+    </div>
+</main>
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+</body>
+</html>

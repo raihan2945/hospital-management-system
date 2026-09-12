@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Appointment details')}"></head>
+<body>
+<header th:replace="~{layout/fragments :: header}"></header>
+<main id="main-content" class="container py-5">
+    <div th:replace="~{layout/fragments :: alerts}"></div>
+    <a class="back-link" th:href="@{/appointments}">&larr; Appointments</a>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 my-4">
+        <div><h1 class="h2" th:text="${record.appointmentCode}"></h1><span th:replace="~{appointments/fragments :: status(${record.status})}"></span></div>
+        <div th:if="${record.editable}" class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary" th:href="@{/appointments/{id}/edit(id=${record.id})}">Edit</a>
+            <a th:if="${record.status.name() == 'SCHEDULED'}" class="btn btn-primary" th:href="@{/appointments/{id}/confirm(id=${record.id})}">Confirm appointment</a>
+            <a class="btn btn-success" th:href="@{/appointments/{id}/complete(id=${record.id})}">Complete appointment</a>
+            <a class="btn btn-outline-danger" th:href="@{/appointments/{id}/cancel(id=${record.id})}">Cancel appointment</a>
+        </div>
+    </div>
+    <p th:unless="${record.editable}" class="alert alert-secondary">This appointment is read-only. Its history is retained.</p>
+    <div class="row g-4">
+        <section class="col-lg-6" aria-labelledby="visit-heading">
+            <div class="card h-100 border-0 shadow-sm p-4">
+                <h2 id="visit-heading" class="h5 mb-4">Visit details</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Patient</dt><dd class="col-sm-8"><a th:href="@{/patients/{id}(id=${record.patient.id})}" th:text="${record.patient.fullName}"></a><br><span class="small text-secondary" th:text="${record.patient.patientCode}"></span></dd>
+                    <dt class="col-sm-4">Doctor</dt><dd class="col-sm-8"><a th:href="@{/doctors/{id}(id=${record.doctor.id})}" th:text="${record.doctor.fullName}"></a><br><span class="small text-secondary" th:text="${record.doctor.specialization}"></span></dd>
+                    <dt class="col-sm-4">Date</dt><dd class="col-sm-8" th:text="${record.appointmentDate}"></dd>
+                    <dt class="col-sm-4">Time (local)</dt><dd class="col-sm-8" th:text="${#temporals.format(record.appointmentTime, 'HH:mm')}"></dd>
+                </dl>
+            </div>
+        </section>
+        <section class="col-lg-6" aria-labelledby="notes-heading">
+            <div class="card h-100 border-0 shadow-sm p-4 text-break">
+                <h2 id="notes-heading" class="h5 mb-4">Reason and notes</h2>
+                <h3 class="h6">Symptoms / reason</h3><p class="preserve-lines" th:text="${record.reason ?: 'Not provided'}"></p>
+                <h3 class="h6">Notes</h3><p class="preserve-lines mb-0" th:text="${record.notes ?: 'Not provided'}"></p>
+            </div>
+        </section>
+    </div>
+    <div class="mt-4 text-secondary small text-break">
+        <p class="mb-1">Created (UTC): <span th:text="${record.createdAt}"></span></p>
+        <p>Last updated (UTC): <span th:text="${record.updatedAt}"></span></p>
+    </div>
+</main>
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+</body>
+</html>
+

@@ -1,0 +1,62 @@
+:root {
+    --hms-teal: #14645f;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f5f8fa;
+    color: #203238;
+}
+
+main {
+    flex: 1;
+}
+
+.brand-mark {
+    display: inline-grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: .6rem;
+    background: var(--hms-teal);
+    color: white;
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.welcome-panel {
+    color: white;
+    background: var(--hms-teal);
+}
+
+.welcome-description {
+    max-width: 42rem;
+}
+
+.card {
+    border-radius: 1rem;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--hms-teal);
+    --bs-btn-border-color: var(--hms-teal);
+    --bs-btn-hover-bg: #0d504c;
+    --bs-btn-hover-border-color: #0d504c;
+    --bs-btn-active-bg: #0d504c;
+    --bs-btn-active-border-color: #0d504c;
+}
+
+.form-page { max-width: 850px; }
+.directory-table th, .directory-table td { padding: 1rem; }
+.directory-table th { background: #edf3f5; font-size: .85rem; }
+.directory-table td { max-width: 24rem; overflow-wrap: anywhere; }
+dd { white-space: pre-wrap; }
+.back-link { text-decoration: none; }
+.nav-link.active { color: var(--hms-teal) !important; font-weight: 600; }
+.status-scheduled { background: #e0ecff; color: #174ea6; }
+.status-confirmed { background: #d5f1f5; color: #075465; }
+.status-completed { background: #d5efdd; color: #145c30; }
+.status-cancelled { background: #fbe0e3; color: #9d2532; }
+.preserve-lines { white-space: pre-wrap; }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head(${title})}"></head>
+<body>
+<header th:replace="~{layout/fragments :: header}"></header>
+<main id="main-content" class="container py-5">
+    <div class="form-page mx-auto">
+        <a class="back-link" th:href="@{/doctors}">&larr; Doctor directory</a>
+        <h1 class="h2 mt-3" th:text="${title}">Register doctor</h1>
+        <p class="text-secondary">Fields marked * are required.</p>
+        <form method="post" th:action="${id == null} ? @{/doctors} : @{/doctors/{id}/edit(id=${id})}" th:object="${form}" class="card border-0 shadow-sm p-4">
+            <div th:replace="~{layout/forms :: errors}"></div>
+            <fieldset>
+                <legend class="h5 mb-3">Contact details</legend>
+                <div th:replace="~{layout/forms :: contactFields}"></div>
+            </fieldset>
+            <fieldset class="mt-4">
+                <legend class="h5 mb-3">Practice details</legend>
+                <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label" for="specialization">Specialization *</label>
+            <input class="form-control" th:errorclass="is-invalid" type="text" id="specialization" th:field="*{specialization}" required maxlength="100" list="specialization-options"
+                   th:attr="aria-invalid=${#fields.hasErrors('specialization')}" aria-describedby="specialization-error">
+            <div class="invalid-feedback" id="specialization-error" th:errors="*{specialization}"></div>
+        </div>
+        <datalist id="specialization-options"><option th:each="option : ${suggestedSpecializations}" th:value="${option}"></option></datalist>
+        <div class="col-md-6">
+            <label class="form-label" for="qualification">Qualification</label>
+            <input class="form-control" th:errorclass="is-invalid" type="text" id="qualification" th:field="*{qualification}" maxlength="255" placeholder="For example, MBBS, MD"
+                   th:attr="aria-invalid=${#fields.hasErrors('qualification')}" aria-describedby="qualification-error">
+            <div class="invalid-feedback" id="qualification-error" th:errors="*{qualification}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="consultationFee">Consultation fee *</label>
+            <input class="form-control" th:errorclass="is-invalid" type="number" id="consultationFee" th:field="*{consultationFee}" required min="0" max="9999999999.99" step="0.01"
+                   th:attr="aria-invalid=${#fields.hasErrors('consultationFee')}" aria-describedby="consultationFee-error">
+            <div class="invalid-feedback" id="consultationFee-error" th:errors="*{consultationFee}"></div>
+        </div>
+        <div class="col-md-6 d-flex align-items-center">
+            <div class="form-check form-switch mt-4">
+                <input class="form-check-input" type="checkbox" role="switch" id="available" th:field="*{available}">
+                <label class="form-check-label" for="available">Available for appointments</label>
+                <div class="text-danger small" th:errors="*{available}"></div>
+            </div>
+        </div>
+                </div>
+            </fieldset>
+            <div class="d-flex flex-wrap gap-2 mt-4 pt-4 border-top">
+                <button class="btn btn-primary" type="submit" th:text="${id == null ? 'Register doctor' : 'Save changes'}">Save</button>
+                <a class="btn btn-outline-secondary" th:href="${id == null} ? @{/doctors} : @{/doctors/{id}(id=${id})}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+</body>
+</html>
+

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="contactFields" class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label" for="firstName">First name *</label>
+            <input class="form-control" th:errorclass="is-invalid" type="text" id="firstName" th:field="*{firstName}" required maxlength="100" autocomplete="given-name"
+                   th:attr="aria-invalid=${#fields.hasErrors('firstName')}" aria-describedby="firstName-error">
+            <div class="invalid-feedback" id="firstName-error" th:errors="*{firstName}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="lastName">Last name *</label>
+            <input class="form-control" th:errorclass="is-invalid" type="text" id="lastName" th:field="*{lastName}" required maxlength="100" autocomplete="family-name"
+                   th:attr="aria-invalid=${#fields.hasErrors('lastName')}" aria-describedby="lastName-error">
+            <div class="invalid-feedback" id="lastName-error" th:errors="*{lastName}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="phone">Phone *</label>
+            <input class="form-control" th:errorclass="is-invalid" type="tel" id="phone" th:field="*{phone}" required maxlength="30" autocomplete="tel"
+                   th:attr="aria-invalid=${#fields.hasErrors('phone')}" aria-describedby="phone-error">
+            <div class="invalid-feedback" id="phone-error" th:errors="*{phone}"></div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-control" th:errorclass="is-invalid" type="email" id="email" th:field="*{email}" maxlength="254" autocomplete="email"
+                   th:attr="aria-invalid=${#fields.hasErrors('email')}" aria-describedby="email-error">
+            <div class="invalid-feedback" id="email-error" th:errors="*{email}"></div>
+        </div>
+</div>
+<div th:fragment="errors" class="alert alert-danger" role="alert" th:if="${#fields.hasAnyErrors()}">
+    <p class="fw-semibold mb-1">Please correct the following fields.</p>
+    <ul class="mb-0"><li th:each="error : ${#fields.allErrors()}" th:text="${error}"></li></ul>
+</div>
+</body>
+</html>
+
