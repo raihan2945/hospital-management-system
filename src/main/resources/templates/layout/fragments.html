@@ -3,38 +3,58 @@
 <head th:fragment="head(title)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#14645f">
     <title th:text="${title} + ' | Hospital Management System'">Hospital Management System</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
 <body>
-<header th:fragment="header" class="border-bottom bg-white">
-    <a class="visually-hidden-focusable" href="#main-content">Skip to content</a>
-    <nav class="navbar navbar-expand-sm container py-3" aria-label="Main navigation">
-        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" th:href="@{/}">
-            <span class="brand-mark" aria-hidden="true">+</span> HMS
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navigation" aria-controls="navigation"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navigation">
-            <ul class="navbar-nav ms-auto gap-sm-3">
-                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'dashboard'} ? 'active'" th:attr="aria-current=${activeSection == 'dashboard' ? 'page' : null}" th:href="@{/dashboard}">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'patients'} ? 'active'" th:attr="aria-current=${activeSection == 'patients' ? 'page' : null}" th:href="@{/patients}">Patients</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'doctors'} ? 'active'" th:attr="aria-current=${activeSection == 'doctors' ? 'page' : null}" th:href="@{/doctors}">Doctors</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'appointments'} ? 'active'" th:attr="aria-current=${activeSection == 'appointments' ? 'page' : null}" th:href="@{/appointments}">Appointments</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'billing'} ? 'active'" th:attr="aria-current=${activeSection == 'billing' ? 'page' : null}" th:href="@{/billing}">Billing</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/actuator/health}">System health</a></li>
-            </ul>
+<svg th:fragment="icon(name)" class="bi" width="20" height="20" fill="currentColor" aria-hidden="true" focusable="false"><use th:href="@{/vendor/bootstrap-icons/bootstrap-icons.svg} + '#' + ${name}"></use></svg>
+<header th:fragment="header" class="app-header">
+    <a class="visually-hidden-focusable skip-link" href="#main-content">Skip to content</a>
+    <div class="app-topbar d-flex align-items-center justify-content-between gap-3 px-3 px-lg-4">
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-outline-secondary d-lg-none mobile-menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#workspace-navigation" aria-controls="workspace-navigation" aria-label="Open navigation"><svg th:replace="~{layout/fragments :: icon('list')}"></svg></button>
+            <a class="app-brand d-flex align-items-center gap-2" th:href="@{/dashboard}"><span class="brand-mark"><svg th:replace="~{layout/fragments :: icon('hospital')}"></svg></span><span>HMS<span class="d-none d-sm-inline app-brand-description">Hospital workspace</span></span></a>
         </div>
-    </nav>
+        <a class="btn btn-sm btn-outline-primary topbar-action" th:href="@{/appointments/new}"><svg th:replace="~{layout/fragments :: icon('calendar-plus')}"></svg><span class="d-none d-sm-inline">Schedule appointment</span><span class="d-sm-none">Book visit</span></a>
+    </div>
+    <aside class="offcanvas-lg offcanvas-start app-sidebar" tabindex="-1" id="workspace-navigation" aria-labelledby="navigation-title">
+        <div class="offcanvas-header border-bottom"><h2 id="navigation-title" class="h5 mb-0">Hospital workspace</h2><button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#workspace-navigation" aria-label="Close navigation"></button></div>
+        <div class="offcanvas-body d-flex flex-column">
+            <p class="sidebar-label">Workspace</p>
+            <nav class="nav flex-column gap-1" aria-label="Main navigation">
+                <a class="nav-link" th:classappend="${activeSection == 'dashboard'} ? 'active'" th:attr="aria-current=${activeSection == 'dashboard' ? 'page' : null}" th:href="@{/dashboard}"><svg th:replace="~{layout/fragments :: icon('grid-1x2')}"></svg>Dashboard</a>
+                <a class="nav-link" th:classappend="${activeSection == 'patients'} ? 'active'" th:attr="aria-current=${activeSection == 'patients' ? 'page' : null}" th:href="@{/patients}"><svg th:replace="~{layout/fragments :: icon('people')}"></svg>Patients</a>
+                <a class="nav-link" th:classappend="${activeSection == 'doctors'} ? 'active'" th:attr="aria-current=${activeSection == 'doctors' ? 'page' : null}" th:href="@{/doctors}"><svg th:replace="~{layout/fragments :: icon('person-badge')}"></svg>Doctors</a>
+                <a class="nav-link" th:classappend="${activeSection == 'appointments'} ? 'active'" th:attr="aria-current=${activeSection == 'appointments' ? 'page' : null}" th:href="@{/appointments}"><svg th:replace="~{layout/fragments :: icon('calendar2-week')}"></svg>Appointments</a>
+                <a class="nav-link" th:classappend="${activeSection == 'billing'} ? 'active'" th:attr="aria-current=${activeSection == 'billing' ? 'page' : null}" th:href="@{/billing}"><svg th:replace="~{layout/fragments :: icon('receipt')}"></svg>Billing</a>
+            </nav>
+            <div class="sidebar-help mt-auto pt-4">
+                <div class="rounded-3 p-3 mb-3"><p class="fw-semibold mb-1">New patient?</p><p class="small text-secondary mb-3">Start with their registration details.</p><a class="btn btn-primary w-100" th:href="@{/patients/new}"><svg th:replace="~{layout/fragments :: icon('person-plus')}"></svg>Register patient</a></div>
+                <a class="nav-link" th:href="@{/actuator/health}"><svg th:replace="~{layout/fragments :: icon('activity')}"></svg>System health</a>
+            </div>
+        </div>
+    </aside>
+    <noscript><style>@media (max-width:991.98px){.app-sidebar{position:static!important;visibility:visible!important;transform:none!important;width:100%!important;height:auto!important}.app-sidebar .offcanvas-body{display:block!important}.app-sidebar .offcanvas-header,.mobile-menu-toggle,.sidebar-help{display:none!important}.app-sidebar .nav{flex-direction:row!important;flex-wrap:wrap}.app-header{position:static!important}}</style></noscript>
 </header>
-<div th:fragment="alerts" th:if="${success}" class="alert alert-success" role="status" th:text="${success}"></div>
-<footer th:fragment="footer" class="container border-top py-4 text-secondary small">
-    Hospital Management System &middot; Java OOP assignment
+<div th:fragment="alerts" th:if="${success}" class="alert alert-success alert-dismissible d-flex align-items-start gap-3" role="status">
+    <svg th:replace="~{layout/fragments :: icon('check-circle')}"></svg><span th:text="${success}"></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Dismiss success message"></button>
+</div>
+<span th:fragment="paymentStatus(status)" class="badge status-badge" th:classappend="|payment-${#strings.toLowerCase(status.name())}|" th:text="${status.label}"></span>
+<div th:fragment="emptyState(icon, title, message, actionLabel, actionUrl)" class="card border-0 shadow-sm empty-state text-center p-4 p-md-5">
+    <span class="empty-state-icon mx-auto"><svg th:replace="~{layout/fragments :: icon(${icon})}"></svg></span><h2 class="h5 mt-3" th:text="${title}"></h2><p class="text-secondary mb-3" th:text="${message}"></p><div><a class="btn btn-outline-primary" th:href="${actionUrl}" th:text="${actionLabel}"></a></div>
+</div>
+<footer th:fragment="footer" class="app-footer container border-top py-4 text-secondary small">
+    <div class="d-flex flex-wrap justify-content-between gap-2"><span>Hospital Management System</span><span>Patient care, organized.</span></div>
+    <div class="modal fade" id="confirmation-modal" tabindex="-1" aria-labelledby="confirmation-modal-title" aria-describedby="confirmation-modal-description" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+            <div class="modal-header"><h2 class="modal-title fs-5" id="confirmation-modal-title">Confirm action</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close confirmation"></button></div>
+            <div class="modal-body" id="confirmation-modal-description"></div>
+        </div></div>
+    </div>
     <script th:src="@{/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/app.js}"></script>
 </footer>
 </body>
 </html>

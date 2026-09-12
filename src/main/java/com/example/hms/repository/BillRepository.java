@@ -11,6 +11,9 @@ public interface BillRepository extends JpaRepository<Bill, Long>, JpaSpecificat
     @Query("select sum(b.totalAmount - b.paidAmount) from Bill b")
     java.math.BigDecimal sumOutstandingDue();
 
+    @Query("select b.appointment.id from Bill b where b.appointment.id in :appointmentIds")
+    java.util.Set<Long> findBilledAppointmentIds(java.util.Collection<Long> appointmentIds);
+
     @Override
     @EntityGraph(attributePaths = {"patient", "appointment"})
     Page<Bill> findAll(Specification<Bill> specification, Pageable pageable);

@@ -10,9 +10,9 @@
         <div><h1 class="h2" th:text="${record.appointmentCode}"></h1><span th:replace="~{appointments/fragments :: status(${record.status})}"></span></div>
         <div th:if="${record.editable}" class="d-flex flex-wrap gap-2">
             <a th:if="${bill == null}" class="btn btn-outline-secondary" th:href="@{/appointments/{id}/edit(id=${record.id})}">Edit</a>
-            <a th:if="${record.status.name() == 'SCHEDULED'}" class="btn btn-primary" th:href="@{/appointments/{id}/confirm(id=${record.id})}">Confirm appointment</a>
-            <a class="btn btn-success" th:href="@{/appointments/{id}/complete(id=${record.id})}">Complete appointment</a>
-            <a th:if="${bill == null}" class="btn btn-outline-danger" th:href="@{/appointments/{id}/cancel(id=${record.id})}">Cancel appointment</a>
+            <a data-confirm th:if="${record.status.name() == 'SCHEDULED'}" class="btn btn-primary" th:href="@{/appointments/{id}/confirm(id=${record.id})}">Confirm appointment</a>
+            <a data-confirm class="btn btn-success" th:href="@{/appointments/{id}/complete(id=${record.id})}">Complete appointment</a>
+            <a data-confirm th:if="${bill == null}" class="btn btn-outline-danger" th:href="@{/appointments/{id}/cancel(id=${record.id})}">Cancel appointment</a>
         </div>
     </div>
     <p th:unless="${record.editable}" class="alert alert-secondary">This appointment is read-only. Its history is retained.</p>

@@ -87,7 +87,7 @@
             <div class="card border-0 shadow-sm h-100 overflow-hidden">
                 <div class="p-4 border-bottom"><h2 id="recent-appointments-heading" class="h5 mb-1">Recent appointments</h2><p class="small text-secondary mb-0">The five most recently created bookings, across all visit dates.</p></div>
                 <p th:if="${summary.recentAppointments.empty}" class="text-secondary p-4 mb-0">No appointments yet. <a th:href="@{/appointments/new}">Schedule an appointment</a>.</p>
-                <div th:unless="${summary.recentAppointments.empty}" class="table-responsive">
+                <div th:unless="${summary.recentAppointments.empty}" class="table-responsive" tabindex="0" role="region" aria-label="Recent appointments — scroll horizontally to see all columns">
                     <table class="table directory-table align-middle mb-0"><caption class="visually-hidden">Recently created appointments</caption>
                         <thead><tr><th scope="col">Appointment</th><th scope="col">Visit (local)</th><th scope="col">Status</th></tr></thead>
                         <tbody><tr th:each="appointment : ${summary.recentAppointments}">

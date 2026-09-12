@@ -43,7 +43,9 @@ public class AppointmentController {
                        @RequestParam(required = false) Long patientId, @RequestParam(required = false) Long doctorId,
                        @RequestParam(required = false) AppointmentStatus status,
                        @RequestParam(defaultValue = "0") int page, Model model) {
-        model.addAttribute("records", service.search(date, patientId, doctorId, status, page));
+        var records = service.search(date, patientId, doctorId, status, page);
+        model.addAttribute("records", records);
+        model.addAttribute("billedAppointmentIds", service.billedAppointmentIds(records.stream().map(Appointment::getId).toList()));
         model.addAttribute("date", date);
         model.addAttribute("patientId", patientId);
         model.addAttribute("doctorId", doctorId);

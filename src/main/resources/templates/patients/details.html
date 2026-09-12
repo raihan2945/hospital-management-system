@@ -10,7 +10,7 @@
         <div><p class="text-secondary mb-1" th:text="${record.patientCode}"></p><h1 class="h2 mb-0" th:text="${record.fullName}"></h1></div>
         <div class="d-flex gap-2">
             <a class="btn btn-primary" th:href="@{/patients/{id}/edit(id=${record.id})}">Edit patient</a>
-            <a class="btn btn-outline-danger" th:href="@{/patients/{id}/delete(id=${record.id})}">Delete</a>
+            <a data-confirm class="btn btn-outline-danger" th:href="@{/patients/{id}/delete(id=${record.id})}">Delete</a>
         </div>
     </div>
     <div class="row g-4">

@@ -4,7 +4,7 @@
 <body>
 <header th:replace="~{layout/fragments :: header}"></header>
 <main id="main-content" class="container py-5">
-    <section class="form-page mx-auto card border-0 shadow-sm p-4 p-md-5" aria-labelledby="transition-heading">
+    <section class="form-page mx-auto card border-0 shadow-sm p-4 p-md-5" aria-labelledby="transition-heading" data-confirmation-panel>
         <h1 id="transition-heading" class="h3" th:text="${title}"></h1>
         <p class="mt-3"><strong th:text="${record.appointmentCode}"></strong> &middot; <span th:text="${record.patient.fullName}"></span></p>
         <p>With <span th:text="${record.doctor.fullName}"></span> on <span th:text="${record.appointmentDate}"></span> at <span th:text="${#temporals.format(record.appointmentTime, 'HH:mm')}"></span>.</p>
@@ -14,11 +14,10 @@
         <form method="post" th:action="@{/appointments/{id}/__${action}__(id=${record.id})}" class="d-flex flex-wrap gap-2 mt-3">
             <input type="hidden" name="version" th:value="${record.version}">
             <button class="btn" th:classappend="${action == 'cancel' ? 'btn-danger' : 'btn-primary'}" type="submit" th:text="${title}"></button>
-            <a class="btn btn-outline-secondary" th:href="@{/appointments/{id}(id=${record.id})}">Go back</a>
+            <a class="btn btn-outline-secondary" data-confirm-cancel th:href="@{/appointments/{id}(id=${record.id})}">Go back</a>
         </form>
     </section>
 </main>
 <footer th:replace="~{layout/fragments :: footer}"></footer>
 </body>
 </html>
-

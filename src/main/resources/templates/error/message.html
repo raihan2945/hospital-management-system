@@ -8,6 +8,8 @@
         <h1 class="h3" th:text="${title}"></h1>
         <p class="text-secondary my-3" th:text="${message}"></p>
         <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary" th:href="@{/dashboard}">Dashboard</a>
+            <a class="btn btn-outline-primary" th:href="@{/billing}">Billing</a>
             <a class="btn btn-primary" th:href="@{/appointments}">Appointments</a>
             <a class="btn btn-primary" th:href="@{/patients}">Patient directory</a>
             <a class="btn btn-outline-secondary" th:href="@{/doctors}">Doctor directory</a>

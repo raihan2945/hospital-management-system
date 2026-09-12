@@ -1,0 +1,6 @@
+{
+  "name": "hms-ui-tests",
+  "private": true,
+  "scripts": { "test": "node --test app.test.cjs" },
+  "devDependencies": { "bootstrap": "5.3.8", "jsdom": "26.1.0" }
+}

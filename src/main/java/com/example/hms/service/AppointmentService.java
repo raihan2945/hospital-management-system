@@ -65,6 +65,10 @@ public class AppointmentService {
     public List<Patient> patientOptions() { return patients.findAll(Sort.by("firstName", "lastName", "id")); }
     public List<Doctor> doctorOptions() { return doctors.findAll(Sort.by("firstName", "lastName", "id")); }
 
+    public java.util.Set<Long> billedAppointmentIds(List<Long> ids) {
+        return ids.isEmpty() ? java.util.Set.of() : bills.findBilledAppointmentIds(ids);
+    }
+
     /** Advisory read. Creation and updates repeat this check under a doctor row lock. */
     public boolean isDoctorAvailable(Long doctorId, LocalDate date, LocalTime time) {
         if (doctorId == null || date == null || time == null || time.getSecond() != 0 || time.getNano() != 0) {

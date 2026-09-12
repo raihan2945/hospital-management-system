@@ -4,15 +4,15 @@
 <body>
 <header th:replace="~{layout/fragments :: header}"></header>
 <main id="main-content" class="container py-5">
-    <section class="form-page mx-auto card border-0 shadow-sm p-4 p-md-5" aria-labelledby="delete-title">
+    <section class="form-page mx-auto card border-0 shadow-sm p-4 p-md-5" aria-labelledby="delete-title" data-confirmation-panel>
         <h1 id="delete-title" class="h3" th:text="|Delete ${recordType}?|"></h1>
         <p class="mt-3">You are about to permanently delete <strong th:text="${record.fullName}"></strong>
             (<span th:text="${code}"></span>).</p>
         <p class="text-secondary">This cannot be undone. Choose Cancel to keep this record.</p>
-        <p class="text-secondary">Records with appointment history cannot be deleted.</p>
+        <p class="text-secondary">Records with appointment or billing history cannot be deleted.</p>
         <form method="post" th:action="@{__${directory}__/{id}/delete(id=${record.id})}" class="d-flex gap-2 mt-3">
             <button class="btn btn-danger" type="submit" th:text="|Delete ${recordType}|"></button>
-            <a class="btn btn-outline-secondary" th:href="@{__${directory}__/{id}(id=${record.id})}">Cancel</a>
+            <a class="btn btn-outline-secondary" data-confirm-cancel th:href="@{__${directory}__/{id}(id=${record.id})}">Cancel</a>
         </form>
     </section>
 </main>

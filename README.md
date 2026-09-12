@@ -2,10 +2,12 @@
 
 A Java 21 varsity assignment project following the [project blueprint](docs/hospital-management-system--blueprint.md).
 
-Phases 1 through 8 provide a running Spring Boot application, persistent
+Phases 1 through 9 provide a running Spring Boot application, persistent
 PostgreSQL storage, the common OOP foundation, and complete patient and doctor
 directories, appointment management, billing, invoices, payment history, and a
-dashboard with current totals and recent activity. Phase 9 covers UI/UX improvement.
+dashboard with current totals and recent activity. Phase 9 adds shared desktop/mobile
+navigation, accessible UI improvements, and confirmation dialogs. Phase 10 covers
+validation and exception-handling improvements.
 
 ## Stack and structure
 
@@ -41,7 +43,11 @@ src/main/resources/
   templates/error/        Friendly missing-record and invalid-request pages
   static/css/app.css
   static/js/billing.js      Decimal total preview and appointment selection
+  static/js/app.js          Confirmation dialogs, form feedback, submission guard
+  static/vendor/           Locally served Bootstrap Icons and license
 src/test/                 Domain, persistence, startup, page, and health tests
+src/test/ui/              JavaScript interaction tests with Bootstrap and jsdom
+scripts/test-ui.ps1        Isolated Docker runner for JavaScript tests
 ```
 
 The base packages are documented with `package-info.java`. Features follow controller → service → repository
@@ -380,6 +386,87 @@ booking forms. All-time counts and financial amounts are labelled explicitly.
    timezone and recreate the Compose app. Check the displayed date/time and today's
    appointment filter. Restart normally and verify the persisted data still drives
    the same totals.
+
+## Phase 9: UI/UX improvements
+
+Every page now shares a top navigation bar and a desktop sidebar. Below 992px the
+sidebar becomes a Bootstrap offcanvas menu, with labelled open/close controls and
+keyboard dismissal. The current module is highlighted with `aria-current`.
+Quick registration and booking links are available from the shared navigation.
+Without JavaScript, mobile navigation remains visible as ordinary links.
+
+The interface includes locally served [Bootstrap Icons v1.13.1](https://github.com/twbs/icons/releases/tag/v1.13.1).
+Only eleven required symbols are included, with their original MIT license in
+`static/vendor/bootstrap-icons/`. No external icon fonts or CDN requests are used.
+Consistent empty states provide a next action in each directory. Tables have
+labelled, keyboard-focusable horizontal scroll regions and mobile scroll hints.
+Form fields have larger touch targets, clearer labels, visible focus outlines,
+and decimal-keyboard hints for money. Validation errors retain input and move
+focus to the error summary; success alerts can be dismissed and do not expire.
+
+Appointment statuses retain blue/info/green/red badges. Billing now consistently
+uses green for Paid, orange for Partially paid, and red for Unpaid on both lists
+and invoices. Status text remains visible alongside the color. Billed appointments
+no longer show an Edit link in the appointment list; their existing server-side
+edit protection remains in force.
+
+Delete links and appointment confirm/complete/cancel links open a confirmation
+modal when JavaScript and Bootstrap are available. The dialog fetches the existing
+confirmation page using GET and uses its actual POST form, including the current
+appointment version. Opening or closing the dialog never changes a record.
+Cancel receives initial focus; Escape, Cancel, and Close dismiss the dialog and
+return focus to the triggering link. The original confirmation URLs remain usable
+without JavaScript, with modified clicks, or if fetching the dialog fails.
+
+Valid POST forms guard rapid repeated submissions and expose a busy state. Browser
+back/forward navigation resets that client-side guard; billing version checks still
+provide the server-side protection. Reduced-motion preferences are respected.
+Invoice printing hides the shared navigation and restores full-page invoice width.
+
+### Manual UI verification
+
+1. Open the dashboard, directories, and forms at desktop and narrow mobile widths.
+   Check sidebar highlighting, the mobile menu, table scrolling, wrapped actions,
+   and form readability. Use Tab to navigate and confirm focus stays visible.
+2. Open Delete for a disposable patient or doctor. Check the name/code, choose
+   Cancel or press Escape, and verify that focus returns to the link and the record
+   remains. Open the direct confirmation URL to verify the page fallback.
+3. Open appointment confirmation/cancellation/completion. Verify its details, close
+   without changing status, then confirm a suitable test appointment and check the
+   success alert. Billed appointments should not offer Edit in the list.
+4. Submit an invalid form. Check preserved input, the focused error summary, and
+   field errors. Complete a valid operation and dismiss its success message.
+5. Check Unpaid, Partially paid, and Paid badges on invoices and billing lists.
+   Print an invoice and verify navigation is absent and the page uses full width.
+6. Disable JavaScript and verify mobile navigation, form submission, and direct
+   confirmation pages still work. Re-enable it afterwards.
+
+### JavaScript interaction tests
+
+The six interaction tests run Bootstrap's actual JavaScript against jsdom to
+check modal fetching, version preservation, escaped names, focus, Cancel/Escape,
+rapid clicks, native link fallback, submission guards, and error accessibility.
+They do not replace visual desktop/mobile checks. Browser automation was unavailable
+in this workspace during Phase 9, so those visual checks remain manual.
+
+With Docker running, execute from PowerShell:
+
+```powershell
+.\scripts\test-ui.ps1
+```
+
+The script uses a temporary Node container and a read-only workspace mount;
+dependencies are installed only in that container. Alternatively, with Node 22:
+
+```shell
+cd src/test/ui
+npm ci
+npm test
+```
+
+These JavaScript tests run separately from Maven. The Java suite also verifies
+shared navigation, local asset references, form feedback, confirmation-page
+fallbacks, and visibility of actions on billed appointments.
 
 ## Run with Docker (recommended)
 

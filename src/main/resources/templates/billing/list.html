@@ -26,8 +26,10 @@
             <div class="col-md-4 d-flex gap-2"><button class="btn btn-primary" type="submit">Filter</button><a class="btn btn-outline-secondary" th:href="@{/billing}">Reset</a></div>
         </div>
     </form>
-    <div class="card border-0 shadow-sm overflow-hidden">
-        <div class="table-responsive"><table class="table directory-table align-middle mb-0">
+    <p class="text-secondary small" th:text="|${records.totalElements} invoice(s) found|"></p>
+    <div th:if="${records.empty}"><div th:replace="~{layout/fragments :: emptyState('receipt', 'No invoices found', 'Create a bill or adjust the filters to find an invoice.', 'Create bill', @{/billing/new(patientId=${patientId})})}"></div></div>
+    <div th:unless="${records.empty}" class="card border-0 shadow-sm overflow-hidden">
+        <p class="table-scroll-hint d-lg-none">Swipe or scroll horizontally to see all columns.</p><div class="table-responsive" tabindex="0" role="region" aria-label="Invoice results — scroll horizontally to see all columns"><table class="table directory-table align-middle mb-0">
             <caption class="visually-hidden">Invoices matching the selected filters</caption>
             <thead><tr><th scope="col">Invoice</th><th scope="col">Patient</th><th scope="col" class="text-end">Total</th><th scope="col" class="text-end">Paid</th><th scope="col" class="text-end">Due</th><th scope="col">Status</th></tr></thead>
             <tbody>
@@ -36,7 +38,7 @@
                     <td><a th:href="@{/billing/{id}(id=${record.id})}" th:text="${record.invoiceNumber}"></a><div class="small text-secondary" th:text="${#temporals.format(record.createdAt, 'yyyy-MM-dd', 'UTC')}"></div></td>
                     <td><a th:href="@{/patients/{id}(id=${record.patient.id})}" th:text="${record.patientName}"></a><div class="small text-secondary" th:text="${record.patientCode}"></div></td>
                     <td class="text-end text-nowrap" th:text="${record.totalAmount}"></td><td class="text-end text-nowrap" th:text="${record.paidAmount}"></td><td class="text-end text-nowrap fw-semibold" th:text="${record.dueAmount}"></td>
-                    <td><span class="badge" th:classappend="${record.paymentStatus.name() == 'PAID' ? 'text-bg-success' : (record.paymentStatus.name() == 'UNPAID' ? 'text-bg-secondary' : 'text-bg-warning')}" th:text="${record.paymentStatus.label}"></span></td>
+                    <td><span th:replace="~{layout/fragments :: paymentStatus(${record.paymentStatus})}"></span></td>
                 </tr>
             </tbody>
         </table></div>
