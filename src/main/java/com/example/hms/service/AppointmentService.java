@@ -30,11 +30,14 @@ public class AppointmentService {
     private final AppointmentRepository appointments;
     private final PatientRepository patients;
     private final DoctorRepository doctors;
+    private final com.example.hms.repository.BillRepository bills;
 
-    public AppointmentService(AppointmentRepository appointments, PatientRepository patients, DoctorRepository doctors) {
+    public AppointmentService(AppointmentRepository appointments, PatientRepository patients, DoctorRepository doctors,
+                              com.example.hms.repository.BillRepository bills) {
         this.appointments = appointments;
         this.patients = patients;
         this.doctors = doctors;
+        this.bills = bills;
     }
 
     public Page<Appointment> search(LocalDate date, Long patientId, Long doctorId, AppointmentStatus status, int page) {
@@ -89,6 +92,7 @@ public class AppointmentService {
     @Transactional
     public Appointment updateAppointment(Long id, @Valid AppointmentForm form) {
         Appointment appointment = lockedAppointment(id, form.getVersion());
+        requireUnbilled(id);
         appointment.requireEditable();
         Long previousDoctorId = appointment.getDoctor().getId();
         // All operations moving between doctors acquire their locks in ID order.
@@ -127,6 +131,7 @@ public class AppointmentService {
     @Transactional
     public void cancelAppointment(Long id, Long version) {
         Appointment appointment = lockedAppointment(id, version);
+        requireUnbilled(id);
         lockDoctor(appointment.getDoctor().getId());
         appointment.cancel();
         appointments.flush();
@@ -138,6 +143,12 @@ public class AppointmentService {
         lockDoctor(appointment.getDoctor().getId());
         appointment.complete();
         appointments.flush();
+    }
+
+    public void requireUnbilled(Long id) {
+        if (bills.existsByAppointmentId(id)) {
+            throw new AppointmentStateException("This appointment has an invoice and cannot be edited or cancelled. It can still be confirmed or completed.");
+        }
     }
 
     private Appointment lockedAppointment(Long id, Long version) {

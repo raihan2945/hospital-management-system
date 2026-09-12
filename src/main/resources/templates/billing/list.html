@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Billing')}"></head>
+<body>
+<header th:replace="~{layout/fragments :: header}"></header>
+<main id="main-content" class="container py-5">
+    <div th:replace="~{layout/fragments :: alerts}"></div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div><h1 class="h2">Billing</h1><p class="text-secondary mb-0">Invoices, received payments, and outstanding balances.</p></div>
+        <a class="btn btn-primary" th:href="@{/billing/new(patientId=${patientId})}">Create bill</a>
+    </div>
+    <form method="get" th:action="@{/billing}" class="card border-0 shadow-sm p-4 mb-4">
+        <input th:if="${appointmentId != null}" type="hidden" name="appointmentId" th:value="${appointmentId}">
+        <p th:if="${appointmentId != null}" class="small text-secondary">Showing invoices linked to appointment <span th:text="${appointmentId}"></span>.</p>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5"><label class="form-label" for="patientId">Patient</label>
+                <select class="form-select" id="patientId" name="patientId"><option value="">All patients</option>
+                    <option th:each="patient : ${patients}" th:value="${patient.id}" th:selected="${patient.id == patientId}" th:text="|${patient.fullName} (${patient.patientCode})|"></option>
+                </select>
+            </div>
+            <div class="col-md-3"><label class="form-label" for="status">Payment status</label>
+                <select class="form-select" id="status" name="status"><option value="">All statuses</option>
+                    <option th:each="choice : ${statuses}" th:value="${choice}" th:selected="${choice == status}" th:text="${choice.label}"></option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2"><button class="btn btn-primary" type="submit">Filter</button><a class="btn btn-outline-secondary" th:href="@{/billing}">Reset</a></div>
+        </div>
+    </form>
+    <div class="card border-0 shadow-sm overflow-hidden">
+        <div class="table-responsive"><table class="table directory-table align-middle mb-0">
+            <caption class="visually-hidden">Invoices matching the selected filters</caption>
+            <thead><tr><th scope="col">Invoice</th><th scope="col">Patient</th><th scope="col" class="text-end">Total</th><th scope="col" class="text-end">Paid</th><th scope="col" class="text-end">Due</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+                <tr th:if="${records.empty}"><td colspan="6" class="text-center py-5 text-secondary">No invoices found. Create a bill or adjust the filters.</td></tr>
+                <tr th:each="record : ${records}">
+                    <td><a th:href="@{/billing/{id}(id=${record.id})}" th:text="${record.invoiceNumber}"></a><div class="small text-secondary" th:text="${#temporals.format(record.createdAt, 'yyyy-MM-dd', 'UTC')}"></div></td>
+                    <td><a th:href="@{/patients/{id}(id=${record.patient.id})}" th:text="${record.patientName}"></a><div class="small text-secondary" th:text="${record.patientCode}"></div></td>
+                    <td class="text-end text-nowrap" th:text="${record.totalAmount}"></td><td class="text-end text-nowrap" th:text="${record.paidAmount}"></td><td class="text-end text-nowrap fw-semibold" th:text="${record.dueAmount}"></td>
+                    <td><span class="badge" th:classappend="${record.paymentStatus.name() == 'PAID' ? 'text-bg-success' : (record.paymentStatus.name() == 'UNPAID' ? 'text-bg-secondary' : 'text-bg-warning')}" th:text="${record.paymentStatus.label}"></span></td>
+                </tr>
+            </tbody>
+        </table></div>
+    </div>
+    <nav th:if="${records.totalPages > 1}" class="d-flex flex-wrap gap-3 align-items-center justify-content-between mt-4" aria-label="Invoice pages">
+        <a th:if="${records.hasPrevious()}" class="btn btn-outline-secondary" th:href="@{/billing(page=${records.number - 1},patientId=${patientId},appointmentId=${appointmentId},status=${status})}">Previous</a>
+        <span th:text="|Page ${records.number + 1} of ${records.totalPages}|"></span>
+        <a th:if="${records.hasNext()}" class="btn btn-outline-secondary" th:href="@{/billing(page=${records.number + 1},patientId=${patientId},appointmentId=${appointmentId},status=${status})}">Next</a>
+    </nav>
+</main>
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+</body>
+</html>

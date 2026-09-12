@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
         return "error/message";
     }
 
-    @ExceptionHandler({AppointmentStateException.class, ReferencedRecordException.class})
+    @ExceptionHandler({AppointmentStateException.class, ReferencedRecordException.class, BillingStateException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public String appointmentState(RuntimeException exception, Model model) {
         model.addAttribute("title", "Unable to change this record");
@@ -45,11 +45,19 @@ public class GlobalExceptionHandler {
         return "error/message";
     }
 
+    @ExceptionHandler(BillingValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String invalidBilling(BillingValidationException exception, Model model) {
+        model.addAttribute("title", "Unable to prepare invoice");
+        model.addAttribute("message", exception.getMessage());
+        return "error/message";
+    }
+
     @ExceptionHandler(OptimisticLockingFailureException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public String staleAppointment(Model model) {
-        model.addAttribute("title", "Appointment changed");
-        model.addAttribute("message", "Reload the appointment before trying again.");
+        model.addAttribute("title", "Record changed");
+        model.addAttribute("message", "Reload the record before trying again.");
         return "error/message";
     }
 }

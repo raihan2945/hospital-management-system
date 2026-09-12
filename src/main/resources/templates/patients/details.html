@@ -44,6 +44,14 @@
             <a class="btn btn-primary" th:href="@{/appointments/new(patientId=${record.id})}">Schedule appointment</a>
         </div>
     </section>
+    <section class="card border-0 shadow-sm p-4 mt-4" aria-labelledby="billing-heading">
+        <h2 id="billing-heading" class="h5">Billing history</h2>
+        <p class="text-secondary">View invoices, payments, and outstanding balances for this patient.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary" th:href="@{/billing(patientId=${record.id})}">View billing history</a>
+            <a class="btn btn-primary" th:href="@{/billing/new(patientId=${record.id})}">Create bill</a>
+        </div>
+    </section>
     <div class="mt-4 text-secondary small text-break">
         <p class="mb-1">Registered (UTC): <span th:text="${record.createdAt}"></span></p>
         <p>Last updated (UTC): <span th:text="${record.updatedAt}"></span></p>

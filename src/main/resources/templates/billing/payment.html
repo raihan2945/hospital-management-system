@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Record payment')}"></head>
+<body>
+<header th:replace="~{layout/fragments :: header}"></header>
+<main id="main-content" class="container py-5">
+    <div class="form-page mx-auto">
+        <a class="back-link" th:href="@{/billing/{id}(id=${record.id})}">&larr; Invoice</a>
+        <h1 class="h2 mt-3">Record payment</h1>
+        <p class="text-secondary"><span th:text="${record.invoiceNumber}"></span> &middot; <span th:text="${record.patientName}"></span></p>
+        <div class="alert alert-info">Remaining balance: <strong th:text="${record.dueAmount}"></strong></div>
+        <form method="post" th:action="@{/billing/{id}/payment(id=${record.id})}" th:object="${paymentForm}" class="card border-0 shadow-sm p-4">
+            <input type="hidden" th:field="*{version}">
+            <div th:replace="~{layout/forms :: errors}"></div>
+            <p class="text-secondary">Record money already received. Card, mobile banking, and bank transfer payments must be completed outside this app.</p>
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label" for="amount">Amount *</label>
+                    <input class="form-control" th:errorclass="is-invalid" type="number" th:field="*{amount}" min="0.01" th:max="${record.dueAmount}" step="0.01" required aria-describedby="amount-error">
+                    <div id="amount-error" class="invalid-feedback" th:errors="*{amount}"></div>
+                </div>
+                <div class="col-md-6"><label class="form-label" for="paymentMethod">Payment method *</label>
+                    <select class="form-select" th:errorclass="is-invalid" th:field="*{paymentMethod}" required aria-describedby="method-error"><option value="">Select method</option><option th:each="method : ${methods}" th:value="${method}" th:text="${method.label}"></option></select>
+                    <div id="method-error" class="invalid-feedback" th:errors="*{paymentMethod}"></div>
+                </div>
+                <div class="col-12"><label class="form-label" for="transactionReference">Receipt / transaction reference (optional)</label>
+                    <input class="form-control" th:errorclass="is-invalid" th:field="*{transactionReference}" maxlength="100" aria-describedby="reference-help reference-error">
+                    <div id="reference-help" class="form-text">Use the receipt or transaction identifier. Do not enter card numbers, PINs, or passwords.</div>
+                    <div id="reference-error" class="invalid-feedback" th:errors="*{transactionReference}"></div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-4 pt-4 border-top"><button type="submit" class="btn btn-primary">Record payment</button><a class="btn btn-outline-secondary" th:href="@{/billing/{id}(id=${record.id})}">Cancel</a></div>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+</body>
+</html>

@@ -32,7 +32,7 @@ class HospitalManagementApplicationTests {
                 .andExpect(view().name("home"))
                 .andExpect(content().string(containsString("Hospital Management System")))
                 .andExpect(content().string(containsString("/actuator/health")))
-                .andExpect(content().string(containsString("Coming soon")));
+                .andExpect(content().string(containsString("View billing")));
     }
 
     @Test

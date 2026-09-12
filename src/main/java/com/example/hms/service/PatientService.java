@@ -23,10 +23,12 @@ import org.springframework.validation.annotation.Validated;
 public class PatientService {
     private final PatientRepository patients;
     private final AppointmentRepository appointments;
+    private final com.example.hms.repository.BillRepository bills;
 
-    public PatientService(PatientRepository patients, AppointmentRepository appointments) {
+    public PatientService(PatientRepository patients, AppointmentRepository appointments, com.example.hms.repository.BillRepository bills) {
         this.patients = patients;
         this.appointments = appointments;
+        this.bills = bills;
     }
 
     public Page<Patient> search(String keyword, Gender gender, String bloodGroup, int page) {
@@ -67,6 +69,9 @@ public class PatientService {
     @Transactional
     public void deletePatient(Long id) {
         Patient patient = getPatient(id);
+        if (bills.existsByPatientId(id)) {
+            throw new ReferencedRecordException("This patient has billing history and cannot be deleted.");
+        }
         if (appointments.existsByPatientId(id)) {
             throw new ReferencedRecordException("This patient has appointment history and cannot be deleted.");
         }

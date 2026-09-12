@@ -20,8 +20,12 @@ import java.time.LocalDate;
 @RequestMapping("/appointments")
 public class AppointmentController {
     private final AppointmentService service;
+    private final com.example.hms.service.BillingService billing;
 
-    public AppointmentController(AppointmentService service) { this.service = service; }
+    public AppointmentController(AppointmentService service, com.example.hms.service.BillingService billing) {
+        this.service = service;
+        this.billing = billing;
+    }
 
     @ModelAttribute("activeSection")
     public String activeSection() { return "appointments"; }
@@ -76,12 +80,14 @@ public class AppointmentController {
     @GetMapping("/{id}")
     public String details(@PathVariable Long id, Model model) {
         model.addAttribute("record", service.getAppointment(id));
+        model.addAttribute("bill", billing.billForAppointment(id));
         return "appointments/details";
     }
 
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable Long id, Model model) {
         Appointment appointment = service.getAppointment(id);
+        service.requireUnbilled(id);
         appointment.requireEditable();
         model.addAttribute("form", AppointmentForm.from(appointment));
         return formPage(model, id);
@@ -132,6 +138,7 @@ public class AppointmentController {
 
     private String transitionPage(Long id, String action, Model model) {
         Appointment appointment = service.getAppointment(id);
+        if (action.equals("cancel")) { service.requireUnbilled(id); }
         appointment.requireEditable();
         if (action.equals("confirm") && appointment.getStatus() != AppointmentStatus.SCHEDULED) {
             throw new AppointmentStateException("Only scheduled appointments can be confirmed.");

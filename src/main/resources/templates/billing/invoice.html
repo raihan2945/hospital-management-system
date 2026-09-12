@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Invoice ' + ${record.invoiceNumber})}"></head>
+<body>
+<header th:replace="~{layout/fragments :: header}"></header>
+<main id="main-content" class="container py-5 invoice-page">
+    <div class="no-print"><div th:replace="~{layout/fragments :: alerts}"></div></div>
+    <div class="d-flex flex-wrap justify-content-between gap-3 mb-4 no-print">
+        <a class="back-link" th:href="@{/billing}">&larr; Billing</a>
+        <div class="d-flex gap-2">
+            <a th:if="${record.dueAmount.signum() > 0}" class="btn btn-primary" th:href="@{/billing/{id}/payment(id=${record.id})}">Record payment</a>
+            <button class="btn btn-outline-secondary" type="button" onclick="window.print()">Print invoice</button>
+        </div>
+    </div>
+    <article class="card border-0 shadow-sm p-4 p-md-5 invoice-sheet">
+        <div class="d-flex flex-wrap justify-content-between gap-3 border-bottom pb-4 mb-4">
+            <div><p class="text-uppercase small text-secondary mb-2">Hospital Management System</p><h1 class="h2">Invoice</h1><p class="mb-0 fw-semibold" th:text="${record.invoiceNumber}"></p></div>
+            <div><span class="badge fs-6 text-bg-light" th:text="${record.paymentStatus.label}"></span><p class="small text-secondary mt-3 mb-0">Issued (UTC)<br><span th:text="${#temporals.format(record.createdAt, 'yyyy-MM-dd HH:mm', 'UTC')}"></span></p></div>
+        </div>
+        <div class="row g-4 mb-4">
+            <section class="col-sm-6"><h2 class="h6 text-secondary">Bill to</h2><p class="mb-1"><a th:href="@{/patients/{id}(id=${record.patient.id})}" th:text="${record.patientName}"></a></p><p class="small mb-0" th:text="${record.patientCode}"></p></section>
+            <section class="col-sm-6"><h2 class="h6 text-secondary">Appointment</h2><a th:if="${record.appointment != null}" th:href="@{/appointments/{id}(id=${record.appointment.id})}" th:text="${record.appointment.appointmentCode}"></a><p th:if="${record.appointment == null}" class="mb-0">No linked appointment</p></section>
+        </div>
+        <table class="table invoice-charges">
+            <caption class="visually-hidden">Invoice charges and balance</caption>
+            <thead><tr><th scope="col">Description</th><th scope="col" class="text-end">Amount</th></tr></thead>
+            <tbody>
+                <tr><th scope="row" class="fw-normal">Consultation fee</th><td class="text-end" th:text="${record.consultationFee}"></td></tr>
+                <tr><th scope="row" class="fw-normal">Service charge</th><td class="text-end" th:text="${record.serviceCharge}"></td></tr>
+                <tr><th scope="row" class="fw-normal">Medicine charge</th><td class="text-end" th:text="${record.medicineCharge}"></td></tr>
+                <tr><th scope="row" class="fw-normal">Other charge</th><td class="text-end" th:text="${record.otherCharge}"></td></tr>
+                <tr><th scope="row">Subtotal</th><td class="text-end" th:text="${record.subtotal}"></td></tr>
+                <tr><th scope="row" class="fw-normal">Discount</th><td class="text-end" th:text="|−${record.discount}|"></td></tr>
+                <tr class="table-light"><th scope="row">Total</th><td class="text-end fw-bold" th:text="${record.totalAmount}"></td></tr>
+                <tr><th scope="row" class="fw-normal">Paid</th><td class="text-end" th:text="${record.paidAmount}"></td></tr>
+                <tr><th scope="row">Amount due</th><td class="text-end fw-bold fs-5" th:text="${record.dueAmount}"></td></tr>
+            </tbody>
+        </table>
+        <section class="mt-4" aria-labelledby="payment-history"><h2 id="payment-history" class="h5">Payment history</h2>
+            <p th:if="${payments.empty}" class="text-secondary">No payments recorded.</p>
+            <div th:unless="${payments.empty}" class="table-responsive"><table class="table align-middle payment-history">
+                <caption class="visually-hidden">Recorded payments for this invoice</caption>
+                <thead><tr><th scope="col">Receipt</th><th scope="col">Date (UTC)</th><th scope="col">Method</th><th scope="col">Reference</th><th scope="col" class="text-end">Amount</th></tr></thead>
+                <tbody><tr th:each="payment : ${payments}"><td th:text="|PAY-${payment.id}|"></td><td th:text="${#temporals.format(payment.paymentDate, 'yyyy-MM-dd HH:mm', 'UTC')}"></td><td th:text="${payment.paymentMethod.label}"></td><td class="text-break" th:text="${payment.transactionReference ?: '—'}"></td><td class="text-end text-nowrap" th:text="${payment.amount}"></td></tr></tbody>
+            </table></div>
+        </section>
+        <p class="small text-secondary mb-0 mt-4">All amounts use the hospital's single accounting currency.</p>
+    </article>
+</main>
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+</body>
+</html>

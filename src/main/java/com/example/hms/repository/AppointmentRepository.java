@@ -12,6 +12,12 @@ import java.time.LocalTime;
 import java.util.Optional;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long>, JpaSpecificationExecutor<Appointment> {
+    @Query("select a from Appointment a join fetch a.patient join fetch a.doctor "
+            + "where a.status <> com.example.hms.domain.enums.AppointmentStatus.CANCELLED "
+            + "and not exists (select b.id from Bill b where b.appointment = a) "
+            + "order by a.appointmentDate desc, a.appointmentTime desc, a.id desc")
+    java.util.List<Appointment> findUnbilled();
+
     @Override
     @EntityGraph(attributePaths = {"patient", "doctor"})
     Page<Appointment> findAll(Specification<Appointment> specification, Pageable pageable);

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Create bill')}"></head>
+<body>
+<header th:replace="~{layout/fragments :: header}"></header>
+<main id="main-content" class="container py-5">
+    <div class="form-page mx-auto">
+        <a class="back-link" th:href="@{/billing}">&larr; Billing</a>
+        <h1 class="h2 mt-3">Create bill</h1>
+        <p class="text-secondary">Enter charges and review the total before issuing the invoice. Fields marked * are required.</p>
+        <div th:if="${patients.empty}" class="alert alert-info">Register a patient before creating a bill. <a th:href="@{/patients/new}">Register patient</a></div>
+        <form method="post" th:action="@{/billing}" th:object="${form}" class="card border-0 shadow-sm p-4" id="bill-form">
+            <div th:replace="~{layout/forms :: errors}"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="patientId">Patient *</label>
+                    <select class="form-select" th:errorclass="is-invalid" th:field="*{patientId}" required aria-describedby="patient-error">
+                        <option value="">Select patient</option>
+                        <option th:each="patient : ${patients}" th:value="${patient.id}" th:text="|${patient.fullName} (${patient.patientCode})|"></option>
+                    </select>
+                    <div id="patient-error" class="invalid-feedback" th:errors="*{patientId}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="appointmentId">Appointment (optional)</label>
+                    <select class="form-select" th:errorclass="is-invalid" th:field="*{appointmentId}" aria-describedby="appointment-help appointment-error">
+                        <option value="">No linked appointment</option>
+                        <option th:each="appointment : ${appointments}" th:value="${appointment.id}"
+                                th:attr="data-patient=${appointment.patient.id},data-fee=${appointment.doctor.consultationFee}"
+                                th:text="|${appointment.appointmentCode} · ${appointment.patient.fullName} · ${appointment.appointmentDate}|"></option>
+                    </select>
+                    <div id="appointment-help" class="form-text">Only unbilled, non-cancelled appointments are shown. Selecting one fills the patient and suggested consultation fee.</div>
+                    <div id="appointment-error" class="invalid-feedback" th:errors="*{appointmentId}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="consultationFee">Consultation fee *</label>
+                    <input class="form-control" th:errorclass="is-invalid" type="number" th:field="*{consultationFee}" min="0" max="9999999999.99" step="0.01" required aria-describedby="consultation-error">
+                    <div id="consultation-error" class="invalid-feedback" th:errors="*{consultationFee}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="serviceCharge">Service charge *</label>
+                    <input class="form-control" th:errorclass="is-invalid" type="number" th:field="*{serviceCharge}" min="0" max="9999999999.99" step="0.01" required aria-describedby="service-error">
+                    <div id="service-error" class="invalid-feedback" th:errors="*{serviceCharge}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="medicineCharge">Medicine charge *</label>
+                    <input class="form-control" th:errorclass="is-invalid" type="number" th:field="*{medicineCharge}" min="0" max="9999999999.99" step="0.01" required aria-describedby="medicine-error">
+                    <div id="medicine-error" class="invalid-feedback" th:errors="*{medicineCharge}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="otherCharge">Other charge *</label>
+                    <input class="form-control" th:errorclass="is-invalid" type="number" th:field="*{otherCharge}" min="0" max="9999999999.99" step="0.01" required aria-describedby="other-error">
+                    <div id="other-error" class="invalid-feedback" th:errors="*{otherCharge}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="discount">Discount *</label>
+                    <input class="form-control" th:errorclass="is-invalid" type="number" th:field="*{discount}" min="0" max="99999999999.99" step="0.01" required aria-describedby="discount-error">
+                    <div id="discount-error" class="invalid-feedback" th:errors="*{discount}"></div>
+                </div>
+            </div>
+            <div id="bill-preview" class="rounded bg-light p-3 mt-4" aria-live="polite" hidden></div>
+            <p class="form-text mt-3">All amounts use the hospital's single accounting currency. Issued invoices retain their charges and cannot be edited.</p>
+            <div class="d-flex gap-2 mt-3 pt-4 border-top">
+                <button type="submit" class="btn btn-primary">Create invoice</button>
+                <a class="btn btn-outline-secondary" th:href="@{/billing}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+<script th:src="@{/js/billing.js}"></script>
+</body>
+</html>
