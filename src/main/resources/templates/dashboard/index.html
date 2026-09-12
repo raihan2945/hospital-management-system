@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/fragments :: head('Dashboard')}"></head>
+<body>
+<header th:replace="~{layout/fragments :: header}"></header>
+<main id="main-content" class="container py-5">
+    <section class="welcome-panel rounded-4 p-4 p-md-5 mb-4" aria-labelledby="dashboard-title">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <p class="small text-uppercase mb-2">Hospital Management System</p>
+                <h1 id="dashboard-title" class="display-6 fw-bold">Dashboard</h1>
+                <p class="lead mb-2">Your hospital at a glance.</p>
+                <p class="mb-0">Today: <strong th:text="${summary.today}"></strong> <span class="small" th:text="|(${summary.timeZone})|"></span></p>
+            </div>
+            <a class="btn btn-outline-light" th:href="@{/dashboard}">Refresh dashboard</a>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-4" aria-label="Quick actions">
+            <a class="btn btn-light" th:href="@{/patients/new}">Register patient</a>
+            <a class="btn btn-outline-light" th:href="@{/appointments/new}">Schedule appointment</a>
+            <a class="btn btn-outline-light" th:href="@{/billing/new}">Create bill</a>
+        </div>
+    </section>
+
+    <section aria-labelledby="overview-heading">
+        <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+            <h2 id="overview-heading" class="h5 mb-0">Overview</h2>
+            <p class="small text-secondary mb-0">Updated <span th:text="${#temporals.format(summary.refreshedAt, 'HH:mm:ss', summary.timeZone)}"></span> &middot; Totals are all-time unless labelled today.</p>
+        </div>
+        <div class="row g-3">
+            <div class="col-sm-6 col-xl-4"><article class="card border-0 shadow-sm h-100 p-4 position-relative">
+                <h3 class="h6 text-secondary">Total patients</h3><p id="total-patients" class="dashboard-number" th:text="${summary.totalPatients}"></p>
+                <a class="stretched-link" th:href="@{/patients}">View patients</a>
+            </article></div>
+            <div class="col-sm-6 col-xl-4"><article class="card border-0 shadow-sm h-100 p-4 position-relative">
+                <h3 class="h6 text-secondary">Total doctors</h3><p id="total-doctors" class="dashboard-number" th:text="${summary.totalDoctors}"></p>
+                <a class="stretched-link" th:href="@{/doctors}">View doctors</a>
+            </article></div>
+            <div class="col-sm-6 col-xl-4"><article class="card border-0 shadow-sm h-100 p-4 position-relative">
+                <h3 class="h6 text-secondary">Today's appointments</h3><p id="today-appointments" class="dashboard-number" th:text="${summary.todayAppointments}"></p>
+                <p class="small text-secondary">All statuses, including cancelled visits.</p>
+                <a class="stretched-link mt-auto" th:href="@{/appointments(date=${summary.today})}">View today's appointments</a>
+            </article></div>
+            <div class="col-sm-6 col-xl-4"><article class="card border-0 shadow-sm h-100 p-4">
+                <h3 class="h6 text-secondary">Pending appointments</h3><p id="pending-appointments" class="dashboard-number" th:text="${summary.pendingAppointments}"></p>
+                <p class="small text-secondary">Scheduled and confirmed visits across all dates.</p>
+                <div class="d-flex flex-wrap gap-3 mt-auto">
+                    <a th:href="@{/appointments(status='SCHEDULED')}" th:text="|Scheduled (${summary.scheduledAppointments})|"></a>
+                    <a th:href="@{/appointments(status='CONFIRMED')}" th:text="|Confirmed (${summary.confirmedAppointments})|"></a>
+                </div>
+            </article></div>
+            <div class="col-sm-6 col-xl-4"><article class="card border-0 shadow-sm h-100 p-4 position-relative">
+                <h3 class="h6 text-secondary">Total revenue</h3><p id="total-revenue" class="dashboard-number dashboard-money" th:text="${summary.totalRevenue}"></p>
+                <p class="small text-secondary">Collected payments, including partial payments.</p>
+                <a class="stretched-link mt-auto" th:href="@{/billing}">View billing</a>
+            </article></div>
+            <div class="col-sm-6 col-xl-4"><article class="card border-0 shadow-sm h-100 p-4">
+                <h3 class="h6 text-secondary">Outstanding due</h3><p id="outstanding-due" class="dashboard-number dashboard-money" th:text="${summary.outstandingDue}"></p>
+                <p class="small text-secondary">Remaining balance across all invoices.</p>
+                <div class="d-flex flex-wrap gap-3 mt-auto">
+                    <a th:href="@{/billing(status='UNPAID')}">Unpaid invoices</a>
+                    <a th:href="@{/billing(status='PARTIALLY_PAID')}">Partially paid invoices</a>
+                </div>
+            </article></div>
+        </div>
+        <div class="row g-3 mt-1">
+            <div class="col-md-4"><a class="dashboard-stat-link rounded-3 p-3 d-flex justify-content-between gap-3" th:href="@{/appointments}"><span>Total appointments</span><strong id="total-appointments" th:text="${summary.totalAppointments}"></strong></a></div>
+            <div class="col-md-4"><a class="dashboard-stat-link rounded-3 p-3 d-flex justify-content-between gap-3" th:href="@{/appointments(status='COMPLETED')}"><span>Completed appointments</span><strong id="completed-appointments" th:text="${summary.completedAppointments}"></strong></a></div>
+            <div class="col-md-4"><a class="dashboard-stat-link rounded-3 p-3 d-flex justify-content-between gap-3" th:href="@{/billing}"><span>Total bills</span><strong id="total-bills" th:text="${summary.totalBills}"></strong></a></div>
+        </div>
+        <p class="small text-secondary mt-3">All amounts use the hospital's single accounting currency.</p>
+    </section>
+
+    <div class="row g-4 mt-2">
+        <section class="col-xl-5" aria-labelledby="recent-patients-heading">
+            <div class="card border-0 shadow-sm h-100 overflow-hidden">
+                <div class="p-4 border-bottom"><h2 id="recent-patients-heading" class="h5 mb-1">Recent patients</h2><p class="small text-secondary mb-0">The five most recently registered patients.</p></div>
+                <p th:if="${summary.recentPatients.empty}" class="text-secondary p-4 mb-0">No patients registered yet. <a th:href="@{/patients/new}">Register your first patient</a>.</p>
+                <ul th:unless="${summary.recentPatients.empty}" class="list-group list-group-flush">
+                    <li th:each="patient : ${summary.recentPatients}" class="list-group-item p-4">
+                        <div class="d-flex flex-wrap justify-content-between gap-2"><a class="fw-semibold text-break" th:href="@{/patients/{id}(id=${patient.id})}" th:text="${patient.fullName}"></a><span class="small text-secondary" th:text="${#temporals.format(patient.registeredAt, 'yyyy-MM-dd', summary.timeZone)}"></span></div>
+                        <span class="small text-secondary" th:text="${patient.code}"></span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+        <section class="col-xl-7" aria-labelledby="recent-appointments-heading">
+            <div class="card border-0 shadow-sm h-100 overflow-hidden">
+                <div class="p-4 border-bottom"><h2 id="recent-appointments-heading" class="h5 mb-1">Recent appointments</h2><p class="small text-secondary mb-0">The five most recently created bookings, across all visit dates.</p></div>
+                <p th:if="${summary.recentAppointments.empty}" class="text-secondary p-4 mb-0">No appointments yet. <a th:href="@{/appointments/new}">Schedule an appointment</a>.</p>
+                <div th:unless="${summary.recentAppointments.empty}" class="table-responsive">
+                    <table class="table directory-table align-middle mb-0"><caption class="visually-hidden">Recently created appointments</caption>
+                        <thead><tr><th scope="col">Appointment</th><th scope="col">Visit (local)</th><th scope="col">Status</th></tr></thead>
+                        <tbody><tr th:each="appointment : ${summary.recentAppointments}">
+                            <td><a th:href="@{/appointments/{id}(id=${appointment.id})}" th:text="${appointment.code}"></a><div class="fw-semibold text-break" th:text="${appointment.patientName}"></div><div class="small text-secondary text-break" th:text="|Doctor: ${appointment.doctorName}|"></div></td>
+                            <td class="text-nowrap"><span th:text="${appointment.date}"></span><br><span class="small" th:text="${#temporals.format(appointment.time, 'HH:mm')}"></span></td>
+                            <td><span th:replace="~{appointments/fragments :: status(${appointment.status})}"></span></td>
+                        </tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+<footer th:replace="~{layout/fragments :: footer}"></footer>
+</body>
+</html>

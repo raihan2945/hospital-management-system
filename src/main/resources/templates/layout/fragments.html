@@ -21,7 +21,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navigation">
             <ul class="navbar-nav ms-auto gap-sm-3">
-                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'home'} ? 'active'" th:attr="aria-current=${activeSection == 'home' ? 'page' : null}" th:href="@{/}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'dashboard'} ? 'active'" th:attr="aria-current=${activeSection == 'dashboard' ? 'page' : null}" th:href="@{/dashboard}">Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'patients'} ? 'active'" th:attr="aria-current=${activeSection == 'patients' ? 'page' : null}" th:href="@{/patients}">Patients</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'doctors'} ? 'active'" th:attr="aria-current=${activeSection == 'doctors' ? 'page' : null}" th:href="@{/doctors}">Doctors</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${activeSection == 'appointments'} ? 'active'" th:attr="aria-current=${activeSection == 'appointments' ? 'page' : null}" th:href="@{/appointments}">Appointments</a></li>

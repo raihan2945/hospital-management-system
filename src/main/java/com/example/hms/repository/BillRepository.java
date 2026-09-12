@@ -8,6 +8,9 @@ import org.springframework.data.jpa.repository.*;
 import java.util.Optional;
 
 public interface BillRepository extends JpaRepository<Bill, Long>, JpaSpecificationExecutor<Bill> {
+    @Query("select sum(b.totalAmount - b.paidAmount) from Bill b")
+    java.math.BigDecimal sumOutstandingDue();
+
     @Override
     @EntityGraph(attributePaths = {"patient", "appointment"})
     Page<Bill> findAll(Specification<Bill> specification, Pageable pageable);

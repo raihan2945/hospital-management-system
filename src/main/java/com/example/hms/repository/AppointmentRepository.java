@@ -12,6 +12,13 @@ import java.time.LocalTime;
 import java.util.Optional;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long>, JpaSpecificationExecutor<Appointment> {
+    long countByAppointmentDate(LocalDate date);
+    long countByStatus(AppointmentStatus status);
+    long countByStatusIn(java.util.Collection<AppointmentStatus> statuses);
+
+    @EntityGraph(attributePaths = {"patient", "doctor"})
+    java.util.List<Appointment> findTop5ByOrderByCreatedAtDescIdDesc();
+
     @Query("select a from Appointment a join fetch a.patient join fetch a.doctor "
             + "where a.status <> com.example.hms.domain.enums.AppointmentStatus.CANCELLED "
             + "and not exists (select b.id from Bill b where b.appointment = a) "

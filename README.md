@@ -2,10 +2,10 @@
 
 A Java 21 varsity assignment project following the [project blueprint](docs/hospital-management-system--blueprint.md).
 
-Phases 1 through 7 provide a running Spring Boot application, persistent
+Phases 1 through 8 provide a running Spring Boot application, persistent
 PostgreSQL storage, the common OOP foundation, and complete patient and doctor
-directories, appointment management, billing, invoices, and payment history.
-Dashboard statistics are scheduled for Phase 8.
+directories, appointment management, billing, invoices, payment history, and a
+dashboard with current totals and recent activity. Phase 9 covers UI/UX improvement.
 
 ## Stack and structure
 
@@ -18,19 +18,19 @@ Dashboard statistics are scheduled for Phase 8.
 ```text
 src/main/java/com/example/hms/
   HospitalManagementApplication.java
-  controller/             Home, patient, doctor, appointment, and billing controllers
-  config/                 Existing-record registration code initialization
+  controller/             Dashboard, patient, doctor, appointment, and billing controllers
+  config/                 Registration code initialization and hospital clock
   domain/                 BaseEntity, Person, Patient, Doctor, Appointment, Bill, Payment
   domain/enums/           Gender, AppointmentStatus, PaymentStatus, PaymentMethod
-  dto/                    Person, patient, doctor, appointment, bill, and payment forms
+  dto/                    Management forms and immutable dashboard summaries
   repository/             Repositories, directory search, and scheduling locks
-  service/                Patient, doctor, and appointment business rules
+  service/                Directory, appointment, billing, and dashboard services
   service/payment/        PaymentProcessor and four payment recording implementations
   exception/              Application errors and handling
   util/                   Shared helpers
 src/main/resources/
   application.yml
-  templates/home.html
+  templates/dashboard/    Overview cards, quick actions, and recent activity
   templates/layout/fragments.html
   templates/layout/forms.html
   templates/patients/      List, form, and details pages
@@ -46,8 +46,8 @@ src/test/                 Domain, persistence, startup, page, and health tests
 
 The base packages are documented with `package-info.java`. Features follow controller → service → repository
 → PostgreSQL, with entities representing domain state and DTOs validating forms.
-The home controller only selects a view. Shared Thymeleaf fragments provide the
-page head, navigation, and footer.
+The dashboard controller obtains a read-only summary from its service. Shared
+Thymeleaf fragments provide the page head, navigation, and footer.
 
 ## Phase 3: common domain and OOP foundation
 
@@ -324,6 +324,63 @@ charges and payment history. No PDF generation dependency is needed.
 7. Restart the app and confirm invoice numbers, balances, and payment history
    remain. Existing database contents are retained during the Phase 7 upgrade.
 
+## Phase 8: dashboard
+
+Open [Dashboard](http://localhost:8080/dashboard) or the root URL. Both now serve
+the same live overview, replacing the starter home page. Bootstrap cards display
+patient and doctor counts, today's appointments, pending appointments, total
+revenue, and outstanding due. Additional links show total appointments, completed
+appointments, and total bills. Quick actions open registration, booking, and bill
+creation; card links open the relevant directories and filtered lists.
+
+| Metric | Definition |
+| --- | --- |
+| Patients / doctors | All registered records, including unavailable doctors |
+| Today's appointments | All appointments dated today in the hospital timezone, including completed and cancelled visits |
+| Pending appointments | Scheduled plus confirmed appointments across all dates |
+| Completed appointments | Appointments with Completed status across all dates |
+| Total bills | All issued invoices, including zero-total invoices |
+| Total revenue | Sum of recorded payment amounts, including partial payments; unpaid invoice amounts are not revenue |
+| Outstanding due | Sum of invoice total minus paid amount across all bills |
+
+The hospital timezone defaults to `Asia/Dhaka` and is configurable through
+`HOSPITAL_TIME_ZONE` in Compose or the local Java environment. This avoids using
+the container's UTC date for today's visits. The displayed date and refresh time
+use the same clock instant. Stored audit and payment timestamps remain UTC.
+
+`DashboardService` uses database count/sum queries with exact decimal amounts and
+returns `0.00` when there are no bills or payments. A read-only PostgreSQL
+repeatable-read transaction keeps each summary internally consistent. Recent
+patients and appointments are limited to five each, ordered by creation timestamp
+then ID descending. Recent appointments mean newly created bookings, regardless
+of the scheduled visit date. Related people are fetched in the query and mapped
+to immutable summary records before rendering, so no open view transaction is
+needed. Opening the dashboard does not add or change any records.
+
+Refresh dashboard reloads the latest values; there is no automatic polling or
+external chart dependency. Empty states link to the relevant registration and
+booking forms. All-time counts and financial amounts are labelled explicitly.
+
+### Manual dashboard verification
+
+1. Open `/` and `/dashboard`; both should display identical metrics and recent
+   lists. With an empty database, verify zero values and registration prompts.
+2. Register a patient and doctor, refresh, and check their counts and the recent
+   patient link. Schedule an appointment for the displayed local date; today's
+   and pending counts should increase. Follow the today card to verify its filter.
+3. Confirm then complete the appointment, refreshing after each change. Pending
+   includes both Scheduled and Confirmed, then decreases on completion. Cancelled
+   appointments remain in total/today counts but are excluded from pending.
+4. Create an unpaid `800.00` bill; outstanding due increases by `800.00`, while
+   revenue remains unchanged. Record `300.00`; revenue increases by `300.00` and
+   outstanding due falls by `300.00`. Record the remaining `500.00` and check again.
+5. Create more than five patients/bookings; recent lists should show only the
+   latest five, with links to their details. Check the page at narrow widths.
+6. If the hospital uses another timezone, set `HOSPITAL_TIME_ZONE` to its IANA
+   timezone and recreate the Compose app. Check the displayed date/time and today's
+   appointment filter. Restart normally and verify the persisted data still drives
+   the same totals.
+
 ## Run with Docker (recommended)
 
 Install Docker with Compose v2. On Windows, start Docker Desktop with Linux
@@ -348,8 +405,8 @@ containers. A local Java, Maven, or PostgreSQL installation is not needed.
    Maven tests run during the image build. The application waits for PostgreSQL
    readiness; Compose then waits for the application health check.
 
-3. Open [the home page](http://localhost:8080). `/dashboard` serves the same
-   starter page. Open [system health](http://localhost:8080/actuator/health) and
+3. Open [the dashboard](http://localhost:8080). `/dashboard` serves the same
+   live overview. Open [system health](http://localhost:8080/actuator/health) and
    confirm both the overall status and `components.db.status` are `UP`.
 
 Useful commands:
@@ -376,6 +433,7 @@ still listens on port 8080 inside its container.
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `SERVER_PORT` | `8080` | Host HTTP port in Compose; listening port for local Java |
+| `HOSPITAL_TIME_ZONE` | `Asia/Dhaka` | IANA timezone for dashboard dates and today's appointments |
 | `POSTGRES_PORT` | `5432` | Host PostgreSQL port in Compose |
 | `POSTGRES_DB` | `hospital_db` | Database initialized by Compose |
 | `POSTGRES_USER` | `hospital` | Database user initialized by Compose |
@@ -465,6 +523,12 @@ transactions verify one invoice per appointment and one payment per submitted bi
 version. Rendering is also checked outside service transactions with open-in-view
 disabled, and committed test records are explicitly cleaned up.
 
+Dashboard tests verify empty summaries, status/date counts, exact revenue and
+outstanding balance calculations with multiple partial payments, updates after
+payments and status transitions, bounded recent lists with deterministic ordering,
+escaped patient names, filtered links, and rendering after the service transaction
+closes. Clock tests cover the Asia/Dhaka midnight boundary and timezone configuration.
+
 The web tests start the full Spring context with a test-only H2 database
 and check both home routes, rendered Thymeleaf fragments, local CSS/JS resources,
 database-aware health, and the absence of the configuration endpoint. H2 is never
@@ -497,7 +561,7 @@ Invoke-RestMethod http://localhost:8080/actuator/health
 
 Expect HTTP 200 and database status `UP`. Check the page at a narrow browser
 width: navigation should collapse, cards should stack, and all styling and scripts
-should load locally. Patient, doctor, appointment, and billing cards link to their modules.
+should load locally. Dashboard cards link to their directories or filtered lists.
 
 To check health failure and recovery in your local setup, stop PostgreSQL with
 `docker compose stop postgres`. The health endpoint should return HTTP 503 with

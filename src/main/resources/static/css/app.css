@@ -63,6 +63,10 @@ dd { white-space: pre-wrap; }
 .invoice-page { max-width: 1050px; }
 .invoice-charges td { font-variant-numeric: tabular-nums; }
 .payment-history td { overflow-wrap: anywhere; max-width: 18rem; }
+.dashboard-number { font-size: clamp(1.8rem, 3vw, 2.5rem); font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: .75rem; overflow-wrap: anywhere; }
+.dashboard-money { letter-spacing: -.03em; }
+.dashboard-stat-link { color: var(--hms-teal); background: #e7f0ef; text-decoration: none; }
+.dashboard-stat-link:hover, .dashboard-stat-link:focus-visible { background: #d4e6e3; text-decoration: underline; }
 
 @media print {
     @page { margin: 15mm; }

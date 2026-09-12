@@ -29,7 +29,7 @@ class HospitalManagementApplicationTests {
     void homeRendersWithSharedLayout(String path) throws Exception {
         mockMvc.perform(get(path))
                 .andExpect(status().isOk())
-                .andExpect(view().name("home"))
+                .andExpect(view().name("dashboard/index"))
                 .andExpect(content().string(containsString("Hospital Management System")))
                 .andExpect(content().string(containsString("/actuator/health")))
                 .andExpect(content().string(containsString("View billing")));
