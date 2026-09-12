@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hospital Management System — Team One</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --navy:#0b2545;
+    --teal:#0f9d8f;
+    --teal-soft:#e6f6f4;
+    --amber:#e08e14;
+    --ink:#132033;
+    --slate:#5a6b82;
+    --line:#d8e0ea;
+    --bg:#f5f8fb;
+  }
+  html,body{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{ font-family:"Segoe UI","Selawik",system-ui,-apple-system,Arial,sans-serif; color:var(--ink); background:#fff; }
+  .slide{
+    position:relative; width:297mm; height:209.6mm; overflow:hidden;
+    background:#fff; page-break-after:always; break-after:page;
+    padding:15mm 16mm 13mm 16mm; display:flex; flex-direction:column;
+  }
+  .slide:last-child{ page-break-after:auto; }
+
+  .head{ display:flex; align-items:flex-end; justify-content:space-between; border-bottom:2px solid var(--line); padding-bottom:4mm; margin-bottom:7mm; }
+  .head h2{ font-size:25pt; font-weight:600; color:var(--navy); letter-spacing:-.3px; line-height:1.1; }
+  .head h2 .dot{ color:var(--teal); }
+  .kicker{ font-size:9pt; font-weight:600; letter-spacing:2.4px; text-transform:uppercase; color:var(--teal); margin-bottom:2mm; }
+  .head .tag{ font-size:9.5pt; color:var(--slate); text-align:right; line-height:1.5; }
+  .body{ flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; }
+  .fill{ height:100%; grid-auto-rows:1fr; }
+  .fill .card{ display:flex; flex-direction:column; justify-content:center; }
+  .fill .benefit{ align-items:center; }
+
+  .foot{ display:flex; justify-content:space-between; align-items:center; font-size:8pt; color:#8b9bb0; letter-spacing:.4px; border-top:1px solid var(--line); padding-top:2.5mm; margin-top:5mm; }
+  .foot b{ color:var(--navy); font-weight:600; }
+
+  .cover{ background:linear-gradient(135deg,#0b2545 0%,#13315c 52%,#12574f 100%); color:#fff; padding:0; justify-content:center; }
+  .cover .wrap{ padding:0 22mm; position:relative; z-index:2; }
+  .cover .eyebrow{ font-size:10.5pt; letter-spacing:5px; text-transform:uppercase; color:#7fe0d4; font-weight:600; }
+  .cover h1{ font-size:46pt; line-height:1.05; font-weight:600; margin:7mm 0 0; letter-spacing:-1.2px; }
+  .cover h1 span{ display:block; font-size:19pt; font-weight:400; color:#b9cbe0; letter-spacing:.4px; margin-top:5mm; line-height:1.4; }
+  .rule{ width:44mm; height:3px; background:#2fd0bd; margin:8mm 0 7mm; }
+  .cover .team{ display:inline-flex; align-items:center; gap:5mm; background:rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.24); border-radius:3mm; padding:4mm 9mm; }
+  .cover .team .lbl{ font-size:8.5pt; letter-spacing:2.6px; text-transform:uppercase; color:#9fd8d0; }
+  .cover .team .nm{ font-size:20pt; font-weight:600; letter-spacing:.4px; margin-top:1mm; }
+  .cover .meta{ margin-top:9mm; font-size:10pt; color:#a9bed6; letter-spacing:.6px; }
+  .blob{ position:absolute; border-radius:50%; }
+  .b1{ width:150mm; height:150mm; right:-45mm; top:-55mm; background:radial-gradient(circle,rgba(47,208,189,.22),transparent 68%); }
+  .b2{ width:110mm; height:110mm; right:18mm; bottom:-48mm; background:radial-gradient(circle,rgba(255,255,255,.10),transparent 70%); }
+  .cross{ position:absolute; right:26mm; top:50%; transform:translateY(-50%); z-index:1; opacity:.5; }
+
+  .grid{ display:grid; gap:6mm; }
+  .g2{ grid-template-columns:1fr 1fr; } .g3{ grid-template-columns:repeat(3,1fr); }
+  .card{ border:1px solid var(--line); border-radius:3mm; padding:5mm 5.5mm; background:#fff; }
+  .card .ic{ width:9mm; height:9mm; border-radius:2.2mm; background:var(--teal-soft); color:var(--teal);
+             display:flex; align-items:center; justify-content:center; font-size:12.5pt; font-weight:700; margin-bottom:3.5mm; }
+  .card h3{ font-size:12.5pt; color:var(--navy); font-weight:600; margin-bottom:2mm; }
+  .card p{ font-size:9.5pt; line-height:1.55; color:var(--slate); }
+  .card p b{ color:var(--ink); font-weight:600; }
+  .tinted{ background:#fbfdfe; }
+
+  .members{ display:grid; grid-template-columns:1fr 1fr; gap:6mm 8mm; height:100%; grid-auto-rows:1fr; }
+  .member{ display:flex; align-items:center; gap:4.5mm; border:1px solid var(--line); border-left:3.5px solid var(--teal); border-radius:2.5mm; padding:4.5mm 5mm; background:#fff; }
+  .member .av{ width:14mm; height:14mm; border-radius:50%; background:var(--navy); color:#fff; display:flex; align-items:center;
+               justify-content:center; font-size:13pt; font-weight:600; flex:none; letter-spacing:.5px; }
+  .member .nm{ font-size:15pt; font-weight:600; color:var(--navy); line-height:1.25; }
+  .member .id{ font-size:10.5pt; color:var(--slate); font-family:Consolas,"Courier New",monospace; letter-spacing:.6px; margin-top:1.5mm; }
+
+  .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:5mm; }
+  .stat{ border-radius:3mm; background:var(--bg); border:1px solid var(--line); padding:4.5mm 5mm; }
+  .stat .n{ font-size:21pt; font-weight:600; color:var(--teal); line-height:1; }
+  .stat .l{ font-size:8.4pt; color:var(--slate); margin-top:2mm; letter-spacing:.5px; }
+
+  .stackrow{ display:flex; gap:5mm; border:1px solid var(--line); border-radius:3mm; overflow:hidden; margin-bottom:4.5mm; }
+  .stackrow .lab{ width:52mm; flex:none; background:var(--navy); color:#fff; padding:4.5mm 5mm; }
+  .stackrow .lab .t{ font-size:11.5pt; font-weight:600; }
+  .stackrow .lab .s{ font-size:8pt; color:#9fb6d0; margin-top:1.2mm; letter-spacing:.5px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:2.5mm; align-items:center; padding:4mm 5mm 4mm 0; }
+  .chip{ font-size:9.5pt; color:var(--navy); background:var(--teal-soft); border:1px solid #c5e8e3; border-radius:20px; padding:1.6mm 4.5mm; font-weight:600; }
+  .chip.alt{ background:#f2f5f9; border-color:#dbe3ec; color:var(--slate); font-weight:500; }
+
+  .diagwrap{ display:flex; gap:7mm; height:100%; }
+  .diagwrap > svg{ flex:1; min-width:0; }
+  .aside{ width:64mm; flex:none; display:flex; flex-direction:column; gap:4mm; }
+  .aside .box{ border:1px solid var(--line); border-radius:3mm; padding:3.5mm 4mm; background:#fbfdfe; }
+  .aside .box h4{ font-size:8.5pt; letter-spacing:1.6px; text-transform:uppercase; color:var(--teal); margin-bottom:2.5mm; }
+  .aside .box li{ list-style:none; font-size:8.6pt; line-height:1.45; color:var(--slate); margin-bottom:1.8mm; }
+  .aside .box li b{ color:var(--navy); font-weight:600; }
+  .mono{ font-family:Consolas,"Courier New",monospace; font-size:8.8pt; color:var(--navy); }
+
+  text{ font-family:"Segoe UI",system-ui,Arial,sans-serif; }
+  .cn{ font-size:13px; font-weight:600; fill:#0b2545; }
+  .st{ font-size:9.5px; fill:#0f9d8f; font-style:italic; }
+  .at{ font-size:10px; fill:#5a6b82; }
+  .at.m{ fill:#13315c; }
+  .ln{ stroke:#0b2545; stroke-width:1.4; fill:none; }
+  .bx{ fill:#ffffff; stroke:#0b2545; stroke-width:1.4; }
+  .bx.abs{ fill:#f4fbfa; stroke-dasharray:5 3; }
+  .bx.if{ fill:#fff8ec; stroke:#e08e14; }
+  .sep{ stroke:#d8e0ea; stroke-width:1; }
+
+  .benefit{ display:flex; gap:4mm; align-items:flex-start; border:1px solid var(--line); border-radius:3mm; padding:4.2mm 5mm; background:#fff; }
+  .benefit .num{ font-size:15pt; font-weight:700; color:#c9d6e3; line-height:1; flex:none; width:9mm; }
+  .benefit h3{ font-size:11.5pt; color:var(--navy); font-weight:600; margin-bottom:1.6mm; }
+  .benefit p{ font-size:9.2pt; line-height:1.5; color:var(--slate); }
+
+  .end{ background:linear-gradient(135deg,#0b2545 0%,#13315c 55%,#12574f 100%); color:#fff; align-items:center; justify-content:center; text-align:center; }
+  .end h1{ font-size:40pt; font-weight:600; letter-spacing:-.6px; }
+  .end p{ font-size:13pt; color:#b9cbe0; margin-top:6mm; letter-spacing:.5px; }
+  .end .names{ margin-top:7mm; font-size:10.5pt; color:#8fd6cb; letter-spacing:1.2px; line-height:2; }
+</style>
+</head>
+<body>
+
+<!-- 1 ============ COVER ============ -->
+<section class="slide cover">
+  <div class="blob b1"></div><div class="blob b2"></div>
+  <svg class="cross" width="130" height="130" viewBox="0 0 120 120">
+    <path d="M46 8h28v38h38v28H74v38H46V74H8V46h38z" fill="none" stroke="#2fd0bd" stroke-width="2.5" opacity=".6"/>
+  </svg>
+  <div class="wrap">
+    <div class="eyebrow">Software Project Presentation</div>
+    <h1>Hospital Management<br>System
+      <span>A Java &amp; Spring Boot web application for end-to-end hospital operations</span>
+    </h1>
+    <div class="rule"></div>
+    <div class="team">
+      <div>
+        <div class="lbl">Presented by</div>
+        <div class="nm">Team One</div>
+      </div>
+    </div>
+    <div class="meta">Java 21 &nbsp;·&nbsp; Spring Boot 3.5 &nbsp;·&nbsp; PostgreSQL &nbsp;·&nbsp; Thymeleaf &amp; Bootstrap 5 &nbsp;·&nbsp; Docker</div>
+  </div>
+</section>
+
+<!-- 2 ============ TEAM ============ -->
+<section class="slide">
+  <div class="head">
+    <div><div class="kicker">Who we are</div><h2>Team One<span class="dot">.</span> Members</h2></div>
+    <div class="tag">5 members<br>Roll numbers as registered</div>
+  </div>
+  <div class="body">
+    <div class="members">
+      <div class="member"><div class="av">MI</div><div><div class="nm">Md. Ismail Hossain</div><div class="id">42240302120</div></div></div>
+      <div class="member"><div class="av">RA</div><div><div class="nm">Raihan Ahamed</div><div class="id">42240302119</div></div></div>
+      <div class="member"><div class="av">ML</div><div><div class="nm">Md. Lukman Hossain</div><div class="id">42240302090</div></div></div>
+      <div class="member"><div class="av">MA</div><div><div class="nm">Mim Akter Laboni</div><div class="id">42240302103</div></div></div>
+      <div class="member"><div class="av">AM</div><div><div class="nm">Abdullah Al Mamun</div><div class="id">42240302123</div></div></div>
+      <div class="member" style="border-left-color:#e08e14;background:#fffdf7;">
+        <div class="av" style="background:#e08e14;">11</div>
+        <div><div class="nm">Built in 11 phases</div><div class="id">domain &rarr; modules &rarr; UI &rarr; validation &rarr; demo</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Team One</b> · Hospital Management System</span><span>02</span></div>
+</section>
+
+<!-- 3 ============ OVERVIEW ============ -->
+<section class="slide">
+  <div class="head">
+    <div><div class="kicker">At a glance</div><h2>Project Overview</h2></div>
+    <div class="tag">Layered web application<br>Controller &rarr; Service &rarr; Repository &rarr; Database</div>
+  </div>
+  <div class="body">
+    <p style="font-size:12pt;line-height:1.65;color:#5a6b82;max-width:218mm;margin-bottom:8mm;">
+      A single web application that replaces a hospital's paper registers. Staff register
+      <b style="color:#132033">patients and doctors</b>, book <b style="color:#132033">conflict-free appointments</b>,
+      issue <b style="color:#132033">invoices</b>, record <b style="color:#132033">payments</b>, and watch live totals on a
+      <b style="color:#132033">dashboard</b> &mdash; all backed by a PostgreSQL database and protected by validation at every layer.
+    </p>
+    <div class="stats" style="margin-bottom:8mm;">
+      <div class="stat"><div class="n">73</div><div class="l">MAIN JAVA CLASSES</div></div>
+      <div class="stat"><div class="n">6</div><div class="l">DOMAIN ENTITIES + 4 ENUMS</div></div>
+      <div class="stat"><div class="n">5</div><div class="l">FUNCTIONAL MODULES</div></div>
+      <div class="stat"><div class="n">14</div><div class="l">AUTOMATED TEST SUITES</div></div>
+    </div>
+    <div class="grid g3">
+      <div class="card tinted"><h3>The problem</h3><p>Paper records are slow to search, easy to lose, and let two patients be booked into the same doctor's slot.</p></div>
+      <div class="card tinted"><h3>Our solution</h3><p>One browser-based system where every record is searchable, every rule is enforced by the server, and money is never miscalculated.</p></div>
+      <div class="card tinted"><h3>How it is built</h3><p>Object-oriented Java with a clean layered architecture, so each module can grow without breaking the others.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Team One</b> · Hospital Management System</span><span>03</span></div>
+</section>
+
+<!-- 4 ============ FEATURES: CORE ============ -->
+<section class="slide">
+  <div class="head">
+    <div><div class="kicker">Features</div><h2>Core Modules</h2></div>
+    <div class="tag">Every module: search &middot; filter &middot; paginate<br>with auto-generated ID codes</div>
+  </div>
+  <div class="body">
+    <div class="grid g3 fill">
+      <div class="card"><div class="ic">P</div><h3>Patient Management</h3><p>Register and edit profiles with gender, birth date, blood group and emergency contact. Auto code <b>PAT-000001</b>; search by name, phone or code.</p></div>
+      <div class="card"><div class="ic">D</div><h3>Doctor Management</h3><p>Specialization, qualification, consultation fee and availability. Auto code <b>DOC-000001</b>; filter by specialization or availability.</p></div>
+      <div class="card"><div class="ic">A</div><h3>Appointments</h3><p>Book a patient with a doctor at a date and time. Status flow <b>Scheduled &rarr; Confirmed &rarr; Completed</b>, or Cancelled at any point.</p></div>
+      <div class="card"><div class="ic">B</div><h3>Billing &amp; Invoices</h3><p>Consultation, service, medicine and other charges minus discount. Stable <b>INV-000001</b> numbers and a print-ready invoice page.</p></div>
+      <div class="card"><div class="ic">$</div><h3>Payments</h3><p>Cash, card, mobile banking and bank transfer. Partial payments supported; status moves Unpaid &rarr; Partially paid &rarr; <b>Paid</b> automatically.</p></div>
+      <div class="card"><div class="ic">#</div><h3>Dashboard</h3><p>Live counts of patients, doctors, today's and pending visits, plus <b>total revenue</b>, <b>outstanding due</b> and recent activity.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Team One</b> · Hospital Management System</span><span>04</span></div>
+</section>
+
+<!-- 5 ============ FEATURES: QUALITY ============ -->
+<section class="slide">
+  <div class="head">
+    <div><div class="kicker">Features</div><h2>Beyond the Basics</h2></div>
+    <div class="tag">The engineering that makes it<br>safe to use for real work</div>
+  </div>
+  <div class="body">
+    <div class="grid g2 fill" style="gap:6mm 8mm;">
+      <div class="card"><h3>No double booking</h3><p>Booking locks the patient row and then the doctor row in the database, so two staff members clicking &ldquo;Save&rdquo; in the same second can never reserve one slot twice.</p></div>
+      <div class="card"><h3>No duplicate payments</h3><p>Each invoice carries a version number. A stale or resubmitted payment form is rejected with a clear &ldquo;reload and check history&rdquo; message instead of charging twice.</p></div>
+      <div class="card"><h3>Validation everywhere</h3><p>Bean Validation runs in the browser, in the controller and again at the service boundary. Invalid forms keep what the user typed and move focus to the error.</p></div>
+      <div class="card"><h3>Safe error handling</h3><p>Friendly 400 / 404 / 405 / 409 / 503 pages. Raw SQL, stack traces and rejected values are never shown to the user; a support reference links to the log.</p></div>
+      <div class="card"><h3>Responsive, accessible UI</h3><p>Shared navigation with a mobile off-canvas menu, keyboard focus outlines and confirmation dialogs &mdash; and every page still works with JavaScript switched off.</p></div>
+      <div class="card"><h3>Presentation-ready demo data</h3><p>One switch seeds 5 doctors, 10 patients, 10 appointments, 5 bills and 4 payments through the real services &mdash; and never touches a database that already holds records.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Team One</b> · Hospital Management System</span><span>05</span></div>
+</section>
+
+<!-- 6 ============ TECH STACK ============ -->
+<section class="slide">
+  <div class="head">
+    <div><div class="kicker">Under the hood</div><h2>Technology Stack</h2></div>
+    <div class="tag">Server-rendered MVC &middot; no external CDN<br>all assets served locally</div>
+  </div>
+  <div class="body">
+    <div class="stackrow">
+      <div class="lab"><div class="t">Language &amp; Framework</div><div class="s">APPLICATION CORE</div></div>
+      <div class="chips"><span class="chip">Java 21</span><span class="chip">Spring Boot 3.5.16</span><span class="chip">Spring MVC</span><span class="chip alt">Maven</span><span class="chip alt">Jakarta Bean Validation</span></div>
+    </div>
+    <div class="stackrow">
+      <div class="lab"><div class="t">Data &amp; Persistence</div><div class="s">STORAGE LAYER</div></div>
+      <div class="chips"><span class="chip">Spring Data JPA</span><span class="chip">Hibernate</span><span class="chip">PostgreSQL 17</span><span class="chip alt">BigDecimal money</span><span class="chip alt">Row &amp; version locking</span></div>
+    </div>
+    <div class="stackrow">
+      <div class="lab"><div class="t">Frontend</div><div class="s">PRESENTATION LAYER</div></div>
+      <div class="chips"><span class="chip">Thymeleaf</span><span class="chip">Bootstrap 5.3.8</span><span class="chip alt">Bootstrap Icons</span><span class="chip alt">Vanilla JavaScript</span><span class="chip alt">Print CSS</span></div>
+    </div>
+    <div class="stackrow">
+      <div class="lab"><div class="t">Testing &amp; Ops</div><div class="s">QUALITY &amp; DELIVERY</div></div>
+      <div class="chips"><span class="chip">JUnit 5</span><span class="chip">Spring Boot Test</span><span class="chip alt">H2 test database</span><span class="chip">Docker &amp; Compose</span><span class="chip alt">Spring Actuator</span></div>
+    </div>
+    <div class="grid g3" style="margin-top:1mm;">
+      <div class="card tinted" style="padding:4mm 5mm;"><p><b>Build &amp; run:</b> multi-stage Docker image &mdash; <span class="mono">docker compose up -d</span> starts the app and the database together.</p></div>
+      <div class="card tinted" style="padding:4mm 5mm;"><p><b>Config:</b> environment variables for database credentials, hospital timezone and optional demo data.</p></div>
+      <div class="card tinted" style="padding:4mm 5mm;"><p><b>Health:</b> Actuator endpoints report application and database status at any time.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Team One</b> · Hospital Management System</span><span>06</span></div>
+</section>
+
+<!-- 7 ============ ARCHITECTURE ============ -->
+<section class="slide">
+  <div class="head">
+    <div><div class="kicker">Design</div><h2>Application Architecture</h2></div>
+    <div class="tag">Each layer has one job<br>and talks only to its neighbour</div>
+  </div>
+  <div class="body">
+    <svg viewBox="0 0 1120 520" style="width:100%;height:auto;">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#0f9d8f"/>
+        </marker>
+      </defs>
+
+      <rect x="8" y="70" width="190" height="112" rx="10" fill="#0b2545"/>
+      <text x="103" y="112" text-anchor="middle" font-size="16" font-weight="600" fill="#ffffff">Browser</text>
+      <text x="103" y="136" text-anchor="middle" font-size="11" fill="#9fb6d0">Thymeleaf pages</text>
+      <text x="103" y="154" text-anchor="middle" font-size="11" fill="#9fb6d0">Bootstrap 5 UI</text>
+
+      <rect x="238" y="70" width="190" height="112" rx="10" fill="#ffffff" stroke="#0b2545" stroke-width="1.6"/>
+      <text x="333" y="106" text-anchor="middle" font-size="16" font-weight="600" fill="#0b2545">Controller</text>
+      <text x="333" y="130" text-anchor="middle" font-size="11" fill="#5a6b82">Routes &amp; form binding</text>
+      <text x="333" y="148" text-anchor="middle" font-size="11" fill="#5a6b82">DTO validation</text>
+      <text x="333" y="166" text-anchor="middle" font-size="11" fill="#5a6b82">Redirect after POST</text>
+
+      <rect x="468" y="70" width="190" height="112" rx="10" fill="#e6f6f4" stroke="#0f9d8f" stroke-width="1.6"/>
+      <text x="563" y="106" text-anchor="middle" font-size="16" font-weight="600" fill="#0b2545">Service</text>
+      <text x="563" y="130" text-anchor="middle" font-size="11" fill="#3f6f6a">Business rules</text>
+      <text x="563" y="148" text-anchor="middle" font-size="11" fill="#3f6f6a">Transactions &amp; locks</text>
+      <text x="563" y="166" text-anchor="middle" font-size="11" fill="#3f6f6a">Code generation</text>
+
+      <rect x="698" y="70" width="190" height="112" rx="10" fill="#ffffff" stroke="#0b2545" stroke-width="1.6"/>
+      <text x="793" y="106" text-anchor="middle" font-size="16" font-weight="600" fill="#0b2545">Repository</text>
+      <text x="793" y="130" text-anchor="middle" font-size="11" fill="#5a6b82">Spring Data JPA</text>
+      <text x="793" y="148" text-anchor="middle" font-size="11" fill="#5a6b82">Criteria queries</text>
+      <text x="793" y="166" text-anchor="middle" font-size="11" fill="#5a6b82">Pagination</text>
+
+      <rect x="928" y="70" width="184" height="112" rx="10" fill="#0f9d8f"/>
+      <text x="1020" y="112" text-anchor="middle" font-size="16" font-weight="600" fill="#ffffff">PostgreSQL</text>
+      <text x="1020" y="136" text-anchor="middle" font-size="11" fill="#d6f3ef">Tables &amp; constraints</text>
+      <text x="1020" y="154" text-anchor="middle" font-size="11" fill="#d6f3ef">Unique codes</text>
+
+      <line x1="200" y1="126" x2="234" y2="126" class="ln" stroke="#0f9d8f" marker-end="url(#ar)"/>
+      <line x1="430" y1="126" x2="464" y2="126" class="ln" stroke="#0f9d8f" marker-end="url(#ar)"/>
+      <line x1="660" y1="126" x2="694" y2="126" class="ln" stroke="#0f9d8f" marker-end="url(#ar)"/>
+      <line x1="890" y1="126" x2="924" y2="126" class="ln" stroke="#0f9d8f" marker-end="url(#ar)"/>
+
+      <line x1="333" y1="186" x2="333" y2="236" class="ln" stroke="#c9d6e3" stroke-dasharray="4 3"/>
+      <line x1="563" y1="186" x2="563" y2="236" class="ln" stroke="#c9d6e3" stroke-dasharray="4 3"/>
+      <line x1="793" y1="186" x2="793" y2="236" class="ln" stroke="#f0d9ae" stroke-dasharray="4 3"/>
+      <line x1="1020" y1="186" x2="1020" y2="236" class="ln" stroke="#f0d9ae" stroke-dasharray="4 3"/>
+
+      <rect x="238" y="238" width="420" height="92" rx="8" fill="#fbfdfe" stroke="#d8e0ea"/>
+      <text x="258" y="266" font-size="12.5" font-weight="600" fill="#0b2545">Cross-cutting &mdash; DTOs &amp; Validation</text>
+      <text x="258" y="290" font-size="11" fill="#5a6b82">Form objects carry user input; Bean Validation runs in the</text>
+      <text x="258" y="308" font-size="11" fill="#5a6b82">controller and again at the service boundary.</text>
+
+      <rect x="698" y="238" width="414" height="92" rx="8" fill="#fffaf1" stroke="#f0d9ae"/>
+      <text x="718" y="266" font-size="12.5" font-weight="600" fill="#0b2545">Cross-cutting &mdash; Global Exception Handling</text>
+      <text x="718" y="290" font-size="11" fill="#5a6b82">One handler turns every failure into a safe page:</text>
+      <text x="718" y="308" font-size="11" fill="#5a6b82">400 · 404 · 405 · 409 · 503 · 500 &mdash; never a stack trace.</text>
+
+      <rect x="8" y="374" width="1104" height="110" rx="10" fill="#f5f8fb" stroke="#e1e8f0"/>
+      <text x="30" y="404" font-size="13" font-weight="600" fill="#0b2545">Example &mdash; what happens when staff book an appointment</text>
+      <text x="30" y="430" font-size="11.5" fill="#5a6b82"><tspan font-weight="600" fill="#0b2545">1.</tspan> The booking form is posted to <tspan class="mono" fill="#0b2545">AppointmentController</tspan>, which binds and validates the DTO. &nbsp;&nbsp;<tspan font-weight="600" fill="#0b2545">2.</tspan> <tspan class="mono" fill="#0b2545">AppointmentService</tspan> opens a transaction and locks the patient row, then the doctor row.</text>
+      <text x="30" y="452" font-size="11.5" fill="#5a6b82"><tspan font-weight="600" fill="#0b2545">3.</tspan> The slot is re-checked under that lock &mdash; a clash returns a field error, never a saved conflict. &nbsp;&nbsp;<tspan font-weight="600" fill="#0b2545">4.</tspan> The repository saves the row, the code <tspan class="mono" fill="#0b2545">APT-000001</tspan> is derived from its ID,</text>
+      <text x="30" y="474" font-size="11.5" fill="#5a6b82"><tspan font-weight="600" fill="#0b2545">5.</tspan> and the browser is redirected to the appointment page &mdash; so a refresh never books twice.</text>
+    </svg>
+  </div>
+  <div class="foot"><span><b>Team One</b> · Hospital Management System</span><span>07</span></div>
+</section>
+
+<!-- 8 ============ OOP CLASS DIAGRAM ============ -->
+<section class="slide">
+  <div class="head">
+    <div><div class="kicker">Object-oriented design</div><h2>Class Diagram</h2></div>
+    <div class="tag">Inheritance hierarchy of the domain model<br>package <span class="mono">com.example.hms.domain</span></div>
+  </div>
+  <div class="body">
+    <div class="diagwrap">
+      <svg viewBox="0 0 850 480" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="inh" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+            <path d="M0 0 L12 6 L0 12 z" fill="#ffffff" stroke="#0b2545" stroke-width="1.3"/>
+          </marker>
+        </defs>
+
+        <rect class="bx abs" x="310" y="4" width="230" height="74" rx="7"/>
+        <text class="cn" x="425" y="22" text-anchor="middle">BaseEntity</text>
+        <text class="st" x="425" y="36" text-anchor="middle">«abstract» @MappedSuperclass</text>
+        <line class="sep" x1="311" y1="43" x2="539" y2="43"/>
+        <text class="at" x="320" y="58">– id : Long</text>
+        <text class="at" x="320" y="72">– createdAt / updatedAt : Instant</text>
+
+        <line class="ln" x1="425" y1="120" x2="425" y2="80" marker-end="url(#inh)"/>
+        <line class="ln" x1="110" y1="120" x2="740" y2="120"/>
+        <line class="ln" x1="110" y1="120" x2="110" y2="150"/>
+        <line class="ln" x1="320" y1="120" x2="320" y2="150"/>
+        <line class="ln" x1="530" y1="120" x2="530" y2="150"/>
+        <line class="ln" x1="740" y1="120" x2="740" y2="150"/>
+
+        <rect class="bx abs" x="15" y="150" width="190" height="112" rx="7"/>
+        <text class="cn" x="110" y="169" text-anchor="middle">Person</text>
+        <text class="st" x="110" y="182" text-anchor="middle">«abstract»</text>
+        <line class="sep" x1="16" y1="189" x2="204" y2="189"/>
+        <text class="at" x="24" y="204">– firstName, lastName</text>
+        <text class="at" x="24" y="218">– phone, email</text>
+        <line class="sep" x1="16" y1="226" x2="204" y2="226"/>
+        <text class="at m" x="24" y="241">+ getFullName()</text>
+        <text class="at m" x="24" y="255">+ rename() · updateContact()</text>
+
+        <rect class="bx" x="225" y="150" width="190" height="112" rx="7"/>
+        <text class="cn" x="320" y="169" text-anchor="middle">Appointment</text>
+        <text class="st" x="320" y="182" text-anchor="middle">@Entity</text>
+        <line class="sep" x1="226" y1="189" x2="414" y2="189"/>
+        <text class="at" x="234" y="204">– code, date, time</text>
+        <text class="at" x="234" y="218">– status : AppointmentStatus</text>
+        <line class="sep" x1="226" y1="226" x2="414" y2="226"/>
+        <text class="at m" x="234" y="241">+ confirm() · cancel()</text>
+        <text class="at m" x="234" y="255">+ complete() · isEditable()</text>
+
+        <rect class="bx" x="435" y="150" width="190" height="112" rx="7"/>
+        <text class="cn" x="530" y="169" text-anchor="middle">Bill</text>
+        <text class="st" x="530" y="182" text-anchor="middle">@Entity</text>
+        <line class="sep" x1="436" y1="189" x2="624" y2="189"/>
+        <text class="at" x="444" y="204">– charges, discount</text>
+        <text class="at" x="444" y="218">– totalAmount, paidAmount</text>
+        <line class="sep" x1="436" y1="226" x2="624" y2="226"/>
+        <text class="at m" x="444" y="241">+ finalizeTotal()</text>
+        <text class="at m" x="444" y="255">+ applyPayment()</text>
+
+        <rect class="bx" x="645" y="150" width="190" height="112" rx="7"/>
+        <text class="cn" x="740" y="169" text-anchor="middle">Payment</text>
+        <text class="st" x="740" y="182" text-anchor="middle">@Entity</text>
+        <line class="sep" x1="646" y1="189" x2="834" y2="189"/>
+        <text class="at" x="654" y="204">– amount : BigDecimal</text>
+        <text class="at" x="654" y="218">– method : PaymentMethod</text>
+        <line class="sep" x1="646" y1="226" x2="834" y2="226"/>
+        <text class="at m" x="654" y="241">+ getTransactionReference()</text>
+        <text class="at m" x="654" y="255">+ getPaymentDate()</text>
+
+        <line class="ln" x1="110" y1="290" x2="110" y2="264" marker-end="url(#inh)"/>
+        <line class="ln" x1="82" y1="290" x2="252" y2="290"/>
+        <line class="ln" x1="82" y1="290" x2="82" y2="320"/>
+        <line class="ln" x1="252" y1="290" x2="252" y2="320"/>
+
+        <rect class="bx" x="5" y="320" width="155" height="140" rx="7"/>
+        <text class="cn" x="82" y="339" text-anchor="middle">Patient</text>
+        <text class="st" x="82" y="352" text-anchor="middle">@Entity → patients</text>
+        <line class="sep" x1="6" y1="359" x2="159" y2="359"/>
+        <text class="at" x="13" y="374">– patientCode</text>
+        <text class="at" x="13" y="388">– gender : Gender</text>
+        <text class="at" x="13" y="402">– dateOfBirth, address</text>
+        <line class="sep" x1="6" y1="410" x2="159" y2="410"/>
+        <text class="at m" x="13" y="425">+ assignPatientCode()</text>
+        <text class="at m" x="13" y="439">+ updatePersonalDetails()</text>
+
+        <rect class="bx" x="175" y="320" width="155" height="140" rx="7"/>
+        <text class="cn" x="252" y="339" text-anchor="middle">Doctor</text>
+        <text class="st" x="252" y="352" text-anchor="middle">@Entity → doctors</text>
+        <line class="sep" x1="176" y1="359" x2="329" y2="359"/>
+        <text class="at" x="183" y="374">– doctorCode</text>
+        <text class="at" x="183" y="388">– specialization</text>
+        <text class="at" x="183" y="402">– consultationFee, available</text>
+        <line class="sep" x1="176" y1="410" x2="329" y2="410"/>
+        <text class="at m" x="183" y="425">+ markAvailable()</text>
+        <text class="at m" x="183" y="439">+ markUnavailable()</text>
+
+        <text x="368" y="340" font-size="12" fill="#0b2545" font-weight="600">Legend</text>
+        <line class="ln" x1="370" y1="368" x2="412" y2="368" marker-end="url(#inh)"/>
+        <text class="at" x="424" y="372">inheritance &mdash; <tspan font-style="italic">extends</tspan></text>
+        <rect class="bx abs" x="370" y="388" width="42" height="18" rx="4"/>
+        <text class="at" x="424" y="402">abstract class &mdash; never instantiated</text>
+        <rect class="bx" x="370" y="420" width="42" height="18" rx="4"/>
+        <text class="at" x="424" y="434">concrete @Entity &mdash; mapped to a table</text>
+      </svg>
+
+      <aside class="aside">
+        <div class="box">
+          <h4>Relationships</h4>
+          <ul>
+            <li><b>Appointment &rarr; Patient</b> &nbsp;many-to-one</li>
+            <li><b>Appointment &rarr; Doctor</b> &nbsp;many-to-one</li>
+            <li><b>Bill &rarr; Patient</b> &nbsp;many-to-one</li>
+            <li><b>Bill &rarr; Appointment</b> &nbsp;one-to-one</li>
+            <li><b>Payment &rarr; Bill</b> &nbsp;many-to-one</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h4>Enumerations</h4>
+          <ul>
+            <li><b>Gender</b> &mdash; MALE, FEMALE, OTHER&hellip;</li>
+            <li><b>AppointmentStatus</b> &mdash; SCHEDULED, CONFIRMED, COMPLETED, CANCELLED</li>
+            <li><b>PaymentStatus</b> &mdash; UNPAID, PARTIALLY_PAID, PAID</li>
+            <li><b>PaymentMethod</b> &mdash; CASH, CARD, MOBILE, BANK</li>
+          </ul>
+        </div>
+        <div class="box" style="background:#fffaf1;border-color:#f0d9ae;">
+          <h4 style="color:#e08e14;">Why it matters</h4>
+          <ul><li>ID and audit timestamps are written <b>once</b> in BaseEntity and inherited by every entity.</li></ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="foot"><span><b>Team One</b> · Hospital Management System</span><span>08</span></div>
+</section>
+
+<!-- 9 ============ OOP PILLARS ============ -->
+<section class="slide">
+  <div class="head">
+    <div><div class="kicker">Object-oriented design</div><h2>The Four Pillars in Our Code</h2></div>
+    <div class="tag">Not theory &mdash; each pillar points<br>at a real class in the project</div>
+  </div>
+  <div class="body">
+    <div style="display:flex;gap:8mm;height:100%;">
+      <div style="flex:1;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:4mm;align-content:center;">
+        <div class="card" style="padding:4mm 5mm;"><div class="ic" style="margin-bottom:2.5mm;">1</div><h3>Encapsulation</h3><p>Every entity field is <b>private</b>. State changes only through guarded methods such as <span class="mono">rename()</span> and <span class="mono">applyPayment()</span>, which validate before assigning. IDs and audit timestamps have no setters at all.</p></div>
+        <div class="card" style="padding:4mm 5mm;"><div class="ic" style="margin-bottom:2.5mm;">2</div><h3>Inheritance</h3><p><span class="mono">Patient</span> and <span class="mono">Doctor</span> extend <span class="mono">Person</span>, which extends <span class="mono">BaseEntity</span>. Name, contact, ID and timestamp behaviour is written once and reused by all six entities.</p></div>
+        <div class="card" style="padding:4mm 5mm;"><div class="ic" style="margin-bottom:2.5mm;">3</div><h3>Polymorphism</h3><p>Four <span class="mono">PaymentProcessor</span> implementations are injected together. The billing service calls <span class="mono">process()</span> without knowing whether the money arrived as cash, card, mobile banking or bank transfer.</p></div>
+        <div class="card" style="padding:4mm 5mm;"><div class="ic" style="margin-bottom:2.5mm;">4</div><h3>Abstraction</h3><p><span class="mono">BillingCalculator</span> and <span class="mono">PaymentProcessor</span> are interfaces; <span class="mono">BaseEntity</span> and <span class="mono">Person</span> are abstract. Services depend on the contract, never on a concrete class.</p></div>
+        <div class="card tinted" style="grid-column:span 2;padding:4mm 5mm;"><h3>The payoff</h3><p>Adding a fifth payment method means writing <b>one new class</b> that implements <span class="mono">PaymentProcessor</span> &mdash; no existing service, controller or template has to change. That is the Open/Closed principle in practice.</p></div>
+      </div>
+      <div style="width:94mm;flex:none;">
+        <svg viewBox="0 0 380 350" style="width:100%;height:auto;">
+          <defs>
+            <marker id="inh2" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+              <path d="M0 0 L12 6 L0 12 z" fill="#ffffff" stroke="#e08e14" stroke-width="1.3"/>
+            </marker>
+          </defs>
+          <rect class="bx if" x="60" y="4" width="300" height="64" rx="7"/>
+          <text class="cn" x="210" y="24" text-anchor="middle">«interface» PaymentProcessor</text>
+          <line class="sep" x1="61" y1="32" x2="359" y2="32"/>
+          <text class="at" x="72" y="47">+ method() : PaymentMethod</text>
+          <text class="at" x="72" y="61">+ process(bill, amount, reference) : Payment</text>
+
+          <line class="ln" x1="210" y1="94" x2="210" y2="70" stroke="#e08e14" marker-end="url(#inh2)"/>
+          <line class="ln" x1="40" y1="94" x2="210" y2="94" stroke="#e08e14"/>
+          <line class="ln" x1="40" y1="94" x2="40" y2="298" stroke="#e08e14"/>
+          <line class="ln" x1="40" y1="130" x2="88" y2="130" stroke="#e08e14"/>
+          <line class="ln" x1="40" y1="186" x2="88" y2="186" stroke="#e08e14"/>
+          <line class="ln" x1="40" y1="242" x2="88" y2="242" stroke="#e08e14"/>
+          <line class="ln" x1="40" y1="298" x2="88" y2="298" stroke="#e08e14"/>
+
+          <rect class="bx" x="88" y="112" width="280" height="36" rx="6"/>
+          <text class="cn" x="228" y="135" text-anchor="middle" font-size="12">CashPaymentProcessor</text>
+          <rect class="bx" x="88" y="168" width="280" height="36" rx="6"/>
+          <text class="cn" x="228" y="191" text-anchor="middle" font-size="12">CardPaymentProcessor</text>
+          <rect class="bx" x="88" y="224" width="280" height="36" rx="6"/>
+          <text class="cn" x="228" y="247" text-anchor="middle" font-size="12">MobileBankingPaymentProcessor</text>
+          <rect class="bx" x="88" y="280" width="280" height="36" rx="6"/>
+          <text class="cn" x="228" y="303" text-anchor="middle" font-size="12">BankTransferPaymentProcessor</text>
+
+          <text x="204" y="340" text-anchor="middle" font-size="11" fill="#5a6b82">One contract &middot; four interchangeable implementations</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Team One</b> · Hospital Management System</span><span>09</span></div>
+</section>
+
+<!-- 10 ============ BENEFITS ============ -->
+<section class="slide">
+  <div class="head">
+    <div><div class="kicker">Value</div><h2>Benefits</h2></div>
+    <div class="tag">What the hospital gains<br>and what we gained as a team</div>
+  </div>
+  <div class="body">
+    <div class="grid g2 fill" style="gap:5mm 7mm;">
+      <div class="benefit"><div class="num">01</div><div><h3>Paperless, instantly searchable records</h3><p>Find any patient or doctor by name, phone or code in seconds instead of turning pages in a register.</p></div></div>
+      <div class="benefit"><div class="num">02</div><div><h3>Zero double bookings</h3><p>Database-level locking guarantees a doctor &mdash; and a patient &mdash; can hold only one appointment in a given slot.</p></div></div>
+      <div class="benefit"><div class="num">03</div><div><h3>Accurate money, every time</h3><p><span class="mono">BigDecimal</span> arithmetic, validated discounts and derived totals: no rounding loss and no accepted overpayment.</p></div></div>
+      <div class="benefit"><div class="num">04</div><div><h3>Real-time financial insight</h3><p>Revenue collected and outstanding dues appear on the dashboard the moment a payment is recorded.</p></div></div>
+      <div class="benefit"><div class="num">05</div><div><h3>Trustworthy data</h3><p>Validation in the browser, controller, service and database, plus creation and update timestamps on every record.</p></div></div>
+      <div class="benefit"><div class="num">06</div><div><h3>Runs anywhere in minutes</h3><p>One <span class="mono">docker compose up</span> starts the application and PostgreSQL &mdash; no manual setup on the demo machine.</p></div></div>
+      <div class="benefit"><div class="num">07</div><div><h3>Easy to extend</h3><p>The layered OOP design lets a new module &mdash; pharmacy, lab reports, wards &mdash; plug in without touching existing code.</p></div></div>
+      <div class="benefit"><div class="num">08</div><div><h3>Learning outcome for Team One</h3><p>Hands-on practice with OOP principles, Spring Boot, relational modelling, concurrency control and automated testing.</p></div></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>Team One</b> · Hospital Management System</span><span>10</span></div>
+</section>
+
+<!-- 11 ============ CLOSING ============ -->
+<section class="slide end">
+  <div class="blob b1"></div>
+  <div style="position:relative;z-index:2;">
+    <h1>Thank You</h1>
+    <p>Questions &amp; live demonstration</p>
+    <div class="rule" style="margin:9mm auto;"></div>
+    <div style="font-size:16pt;font-weight:600;letter-spacing:1px;">Team One</div>
+    <div class="names">
+      Md. Ismail Hossain &nbsp;·&nbsp; Raihan Ahamed &nbsp;·&nbsp; Md. Lukman Hossain<br>
+      Mim Akter Laboni &nbsp;·&nbsp; Abdullah Al Mamun
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
