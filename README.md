@@ -2,13 +2,13 @@
 
 A Java 21 varsity assignment project following the [project blueprint](docs/hospital-management-system--blueprint.md).
 
-Phases 1 through 10 provide a running Spring Boot application, persistent
+Phases 1 through 11 provide a running Spring Boot application, persistent
 PostgreSQL storage, the common OOP foundation, and complete patient and doctor
 directories, appointment management, billing, invoices, payment history, and a
 dashboard with current totals and recent activity. Phase 9 adds shared desktop/mobile
 navigation, accessible UI improvements, and confirmation dialogs. Phase 10 adds
 consistent validation, hospital-date checks, and safe error handling. Phase 11
-will add optional demo data.
+adds optional demo data for presentations.
 
 ## Stack and structure
 
@@ -22,7 +22,7 @@ will add optional demo data.
 src/main/java/com/example/hms/
   HospitalManagementApplication.java
   controller/             Dashboard, patient, doctor, appointment, and billing controllers
-  config/                 Registration code initialization and hospital clock
+  config/                 Registration code initialization, hospital clock, and demo data
   domain/                 BaseEntity, Person, Patient, Doctor, Appointment, Bill, Payment
   domain/enums/           Gender, AppointmentStatus, PaymentStatus, PaymentMethod
   dto/                    Management forms and immutable dashboard summaries
@@ -144,7 +144,8 @@ stable after edits. Database unique constraints protect them. Code columns permi
 null during the initial insert, before the generated ID is known. The startup
 initializer assigns codes to any existing phase 3 records that lack them. It
 preserves their IDs and creation times. Rebuild normally to upgrade; do not reset
-the database volume. No demo patient or doctor records are added automatically.
+the database volume. No demo patient or doctor records are added automatically
+unless demo data is explicitly requested; see [Phase 11](#phase-11-demo-data).
 
 Specialization suggestions allow custom values; the list filter uses the actual
 stored specializations. Consultation fees accept zero through `9999999999.99`,
@@ -563,6 +564,67 @@ null service forms, supported page bounds, and shared contacts. Isolated clock t
 verify newborn registration through MVC, service/domain logic, and JPA across the
 hospital/UTC midnight boundary.
 
+## Phase 11: demo data
+
+Demo records make the final presentation easy to run without registering
+everything by hand. They are opt-in: set `DEMO_DATA=true` in `.env` (or in the
+environment of a local Java process), then start the application normally.
+
+```shell
+docker compose up -d --wait
+```
+
+`DemoDataInitializer` exists only while that setting is true, and it writes only
+when the database has no patients, doctors, appointments, or bills. Demo records
+are therefore never mixed into a database that already holds real work, and
+restarting an already seeded application adds nothing. The startup log reports
+which of the two happened:
+
+```text
+Added demo data: 5 doctors, 10 patients, 10 appointments, 5 bills, 4 payments.
+Demo data was requested but this database already has records; nothing was added.
+```
+
+| Records | Contents |
+| --- | --- |
+| 5 doctors | General Medicine, Cardiology, Orthopedics, Pediatrics, and one unavailable Dermatology doctor; fees `500.00` to `1200.00` |
+| 10 patients | Fixed past birth dates, addresses, blood groups, and emergency contacts; the last record leaves the optional fields blank |
+| 10 appointments | Five today (two Confirmed, two Scheduled, one Cancelled), three Completed past visits, and two future bookings |
+| 5 bills | Three invoices for the completed visits and two standalone patient bills, covering Paid, Partially paid, and Unpaid |
+| 4 payments | One cash, card, mobile banking, and bank transfer settlement with receipt references |
+
+Appointment dates are relative to the hospital timezone's current date, so
+today's appointment card and date filter are always populated. After seeding, the
+dashboard shows ten patients, five doctors, five appointments today, six pending,
+total revenue `2500.50`, and outstanding due `2075.25`.
+
+All records are created through the same services the web forms use, inside one
+transaction, so demo data satisfies the same Bean Validation, doctor and patient
+slot rules, billing arithmetic, and ID-derived `PAT-`/`DOC-`/`APT-`/`INV-` codes
+as staff input. A partial failure rolls back completely. `data.sql` and a Flyway
+migration were both considered; a startup runner was chosen because inserted SQL
+rows would bypass those rules and could not derive codes from generated IDs.
+
+To present on a clean database, remove the demo records with
+`docker compose down -v` (this **deletes all local data**) and start again with
+`DEMO_DATA=true`. Set `DEMO_DATA=false` and recreate the app to keep the existing
+records without seeding another database later.
+
+### Manual demo data verification
+
+1. With an empty database and `DEMO_DATA=true`, start the application and check
+   the startup log line and the populated dashboard cards and recent lists.
+2. Restart the app. The log should report that nothing was added, and the counts
+   should be unchanged.
+3. Filter doctors by availability; only Tanvir Hossain should be unavailable, and
+   booking him should be rejected. Filter appointments by today's date and by each
+   status. Check the Partially paid, Paid, and Unpaid billing filters.
+4. Open invoice `INV-000001`: total `800.00`, paid `300.00`, due `500.00`, with one
+   card payment in history. `INV-000002` should be fully paid by two payments.
+5. Register a new patient and book a visit alongside the demo records; both should
+   behave normally. Then set `DEMO_DATA=false`, recreate the app, and verify that
+   the existing records and codes remain untouched.
+
 ## Run with Docker (recommended)
 
 Install Docker with Compose v2. On Windows, start Docker Desktop with Linux
@@ -616,6 +678,7 @@ still listens on port 8080 inside its container.
 | --- | --- | --- |
 | `SERVER_PORT` | `8080` | Host HTTP port in Compose; listening port for local Java |
 | `HOSPITAL_TIME_ZONE` | `Asia/Dhaka` | IANA timezone for dashboard dates, today's appointments, and birth-date validation |
+| `DEMO_DATA` | `false` | Add demo records at startup, but only to a database with no patients, doctors, appointments, or bills |
 | `POSTGRES_PORT` | `5432` | Host PostgreSQL port in Compose |
 | `POSTGRES_DB` | `hospital_db` | Database initialized by Compose |
 | `POSTGRES_USER` | `hospital` | Database user initialized by Compose |
@@ -711,6 +774,14 @@ payments and status transitions, bounded recent lists with deterministic orderin
 escaped patient names, filtered links, and rendering after the service transaction
 closes. Clock tests cover the Asia/Dhaka midnight boundary and timezone configuration.
 
+Demo data tests start a separate context with seeding enabled and its own
+in-memory database. They check the blueprint's record counts, generated codes,
+every appointment status, specialization, and payment method, conflict-free
+doctor and patient slots, invoice arithmetic and ownership, the populated
+dashboard totals and pages, and that seeding an already populated database
+changes nothing. The default context is also checked to confirm that no demo
+records are seeded unless they are requested.
+
 The web tests start the full Spring context with a test-only H2 database
 and check both home routes, rendered Thymeleaf fragments, local CSS/JS resources,
 database-aware health, and the absence of the configuration endpoint. H2 is never
@@ -732,7 +803,8 @@ docker compose exec postgres psql -U hospital -d hospital_db -c "\d payments"
 The patient and doctor tables should contain `id`, `created_at`, `updated_at`, `first_name`,
 `last_name`, `phone`, and `email`, alongside the subclass-specific fields.
 The registration code columns have unique constraints. The tables start empty;
-register records through the application to populate them.
+register records through the application to populate them, or start once with
+`DEMO_DATA=true` to add the [Phase 11](#phase-11-demo-data) demo records.
 
 On PowerShell, the HTTP checks are:
 

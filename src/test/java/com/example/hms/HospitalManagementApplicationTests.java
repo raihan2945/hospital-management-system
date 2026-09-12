@@ -1,5 +1,7 @@
 package com.example.hms;
 
+import com.example.hms.config.DemoDataInitializer;
+import com.example.hms.config.RegistrationCodeInitializer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -7,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,6 +27,9 @@ class HospitalManagementApplicationTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ApplicationContext context;
 
     @ParameterizedTest
     @ValueSource(strings = {"/", "/dashboard"})
@@ -54,5 +61,11 @@ class HospitalManagementApplicationTests {
     @Test
     void configurationEndpointIsNotExposed() throws Exception {
         mockMvc.perform(get("/actuator/env")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void demoDataIsNotSeededUnlessItIsRequested() {
+        assertThat(context.getBeansOfType(DemoDataInitializer.class)).isEmpty();
+        assertThat(context.getBeansOfType(RegistrationCodeInitializer.class)).hasSize(1);
     }
 }

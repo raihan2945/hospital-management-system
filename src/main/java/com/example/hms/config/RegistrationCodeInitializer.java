@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Adds deterministic codes to existing phase 3 records without replacing them. */
 @Component
+@org.springframework.core.annotation.Order(10)
 public class RegistrationCodeInitializer implements ApplicationRunner {
     private final PatientRepository patients;
     private final DoctorRepository doctors;

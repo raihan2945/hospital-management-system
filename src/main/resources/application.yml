@@ -8,6 +8,8 @@ server:
 
 hospital:
   time-zone: ${HOSPITAL_TIME_ZONE:Asia/Dhaka}
+  demo-data:
+    enabled: ${DEMO_DATA:false}
 
 spring:
   application:

@@ -27,6 +27,7 @@ services:
     environment:
       SERVER_PORT: 8080
       HOSPITAL_TIME_ZONE: ${HOSPITAL_TIME_ZONE:-Asia/Dhaka}
+      DEMO_DATA: ${DEMO_DATA:-false}
       DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-hospital_db}
       DATABASE_USERNAME: ${POSTGRES_USER:-hospital}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-hospital}
